@@ -39,7 +39,7 @@ const toEventTimestamp = (event: { year: string; date: string }) => {
   return new Date(year, month, day).getTime();
 };
 
-const FIXED_IMAGE_FRAME_CLASS = "w-[200px] h-[250px]";
+const FIXED_IMAGE_FRAME_STYLE = { width: 180, height: 220 } as const;
 
 const EventSection = React.memo(({ event, index, isMobile, onOpenDetail }: { event: any; index: number; isMobile: boolean; onOpenDetail: (e: any) => void }) => {
   const useFixedImageSize = Boolean(event.image) && Boolean(event.fixedImageSize);
@@ -130,8 +130,9 @@ const EventSection = React.memo(({ event, index, isMobile, onOpenDetail }: { eve
             {event.image && (
               <div className={cn(
                 "relative overflow-hidden bg-muted/10 group rounded-sm shadow-sm",
-                useFixedImageSize ? FIXED_IMAGE_FRAME_CLASS : "w-full max-w-[320px]"
-              )}>
+                useFixedImageSize ? "mx-auto shrink-0" : "w-full max-w-[320px]"
+              )}
+              style={useFixedImageSize ? FIXED_IMAGE_FRAME_STYLE : undefined}>
                 <motion.img 
                   initial={{ opacity: 0, scale: 1.1 }}
                   whileInView={{ opacity: 1, scale: 1.05 }}
@@ -154,8 +155,9 @@ const EventSection = React.memo(({ event, index, isMobile, onOpenDetail }: { eve
           event.image && (
             <div className={cn(
               "relative overflow-hidden bg-muted/10 group rounded-sm shadow-sm",
-              useFixedImageSize ? FIXED_IMAGE_FRAME_CLASS : "w-full max-w-[320px]"
-            )}>
+              useFixedImageSize ? "mx-auto shrink-0" : "w-full max-w-[320px]"
+            )}
+            style={useFixedImageSize ? FIXED_IMAGE_FRAME_STYLE : undefined}>
               <motion.img 
                 initial={{ opacity: 0 }}
                 whileInView={{ opacity: 1 }}
@@ -561,17 +563,23 @@ export default function App() {
 
                   {selectedEvent.image && (
                     <div className={cn("pt-8", selectedEvent.fixedImageSize ? "flex justify-center" : "") }>
-                      <img 
-                        src={`${import.meta.env.BASE_URL}${selectedEvent.image}`} 
-                        alt={selectedEvent.title}
-                        className={cn(
-                          "rounded-sm shadow-lg",
-                          selectedEvent.fixedImageSize
-                            ? `${FIXED_IMAGE_FRAME_CLASS} object-cover`
-                            : "w-full h-auto"
-                        )}
-                        referrerPolicy="no-referrer"
-                      />
+                      {selectedEvent.fixedImageSize ? (
+                        <div className="rounded-sm shadow-lg overflow-hidden" style={FIXED_IMAGE_FRAME_STYLE}>
+                          <img
+                            src={`${import.meta.env.BASE_URL}${selectedEvent.image}`}
+                            alt={selectedEvent.title}
+                            className="w-full h-full object-cover"
+                            referrerPolicy="no-referrer"
+                          />
+                        </div>
+                      ) : (
+                        <img
+                          src={`${import.meta.env.BASE_URL}${selectedEvent.image}`}
+                          alt={selectedEvent.title}
+                          className="w-full h-auto rounded-sm shadow-lg"
+                          referrerPolicy="no-referrer"
+                        />
+                      )}
                     </div>
                   )}
                 </div>
