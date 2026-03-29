@@ -143,7 +143,7 @@ const EventSection = React.memo(({ event, index, isMobile, onOpenDetail }: { eve
                   loading="lazy"
                   className={cn(
                     "transition-transform duration-700 ease-in-out group-hover:scale-100",
-                    useFixedImageSize ? "w-full h-full object-cover" : "w-full h-auto"
+                    useFixedImageSize ? "w-full h-full object-contain object-top" : "w-full h-auto"
                   )}
                   referrerPolicy="no-referrer"
                 />
@@ -167,7 +167,7 @@ const EventSection = React.memo(({ event, index, isMobile, onOpenDetail }: { eve
                 alt={event.title}
                 loading="lazy"
                 className={cn(
-                  useFixedImageSize ? "w-full h-full object-cover" : "w-full h-auto"
+                  useFixedImageSize ? "w-full h-full object-contain object-top" : "w-full h-auto"
                 )}
                 referrerPolicy="no-referrer"
               />
@@ -568,7 +568,7 @@ export default function App() {
                           <img
                             src={`${import.meta.env.BASE_URL}${selectedEvent.image}`}
                             alt={selectedEvent.title}
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-contain object-top"
                             referrerPolicy="no-referrer"
                           />
                         </div>
