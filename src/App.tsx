@@ -9,6 +9,36 @@ import { PawPrint, ArrowRight, ArrowDown, Search, X, Filter } from 'lucide-react
 import { cn } from './lib/utils';
 import { CHRONICLE_EVENTS, CHRONICLE_TITLE, CHRONICLE_SUBTITLE } from './constants';
 
+const MONTH_INDEX: Record<string, number> = {
+  jan: 0,
+  feb: 1,
+  mar: 2,
+  apr: 3,
+  may: 4,
+  jun: 5,
+  jul: 6,
+  aug: 7,
+  sep: 8,
+  oct: 9,
+  nov: 10,
+  dec: 11,
+};
+
+const toEventTimestamp = (event: { year: string; date: string }) => {
+  const year = Number.parseInt(event.year, 10);
+  if (Number.isNaN(year)) return Number.MAX_SAFE_INTEGER;
+
+  const normalizedDate = event.date.toLowerCase().replace(/\./g, '').trim();
+  const match = normalizedDate.match(/^([a-z]+)\s+(\d{1,2})$/);
+  if (!match) return Number.MAX_SAFE_INTEGER;
+
+  const month = MONTH_INDEX[match[1]];
+  const day = Number.parseInt(match[2], 10);
+  if (month === undefined || Number.isNaN(day)) return Number.MAX_SAFE_INTEGER;
+
+  return new Date(year, month, day).getTime();
+};
+
 const EventSection = React.memo(({ event, index, isMobile, onOpenDetail }: { event: any; index: number; isMobile: boolean; onOpenDetail: (e: any) => void }) => {
   return (
     <div 
@@ -161,8 +191,18 @@ export default function App() {
   }, [CHRONICLE_EVENTS]);
 
   const filteredEvents = useMemo(() => {
-    if (!selectedDog) return CHRONICLE_EVENTS;
-    return CHRONICLE_EVENTS.filter(e => e.dogNames?.includes(selectedDog));
+    const events = selectedDog
+      ? CHRONICLE_EVENTS.filter(e => e.dogNames?.includes(selectedDog))
+      : CHRONICLE_EVENTS;
+
+    return events
+      .map((event, index) => ({ event, index }))
+      .sort((a, b) => {
+        const timeDiff = toEventTimestamp(a.event) - toEventTimestamp(b.event);
+        if (timeDiff !== 0) return timeDiff;
+        return a.index - b.index;
+      })
+      .map(item => item.event);
   }, [selectedDog, CHRONICLE_EVENTS]);
 
   // Scroll to first item when filter changes

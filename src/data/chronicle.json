@@ -9,7 +9,7 @@
       "title": "小狗全体失去重要功能纪念日",
       "description": "不会再爱了",
       "category": "milestone",
-      "dogNames": ["八饼", "巴布豆", "berry", "bubble", "大墨", "dora", "福宝", "Yuumi", "有米", "猪皮"]
+      "dogNames": ["八饼", "巴布豆", "berry", "Bubble", "大墨", "Dora", "福宝", "悠米", "有米", "猪皮"]
     },
     {
       "id": "2",
@@ -18,7 +18,7 @@
       "title": "马年大吉",
       "description": "全体小狗恭贺新春，马年睡大觉，拉大屎",
       "category": "milestone",
-      "dogNames": ["八饼", "巴布豆", "berry", "bubble", "大墨", "dora", "福宝", "Yuumi", "有米", "猪皮"]
+      "dogNames": ["八饼", "巴布豆", "berry", "Bubble", "大墨", "Dora", "福宝", "悠米", "有米", "猪皮"]
     },
     {
       "id": "3",
@@ -46,7 +46,97 @@
       "description": "全体做到",
       "image":"logs/20260323/0323.jpg",
       "category": "milestone",
-      "dogNames": ["八饼", "巴布豆", "berry", "bubble", "大墨", "dora", "福宝", "Yuumi", "有米", "猪皮"]
-    }
+      "dogNames": ["八饼", "巴布豆", "berry", "Bubble", "大墨", "Dora", "福宝", "悠米", "有米", "猪皮"]
+    },
+    {
+      "id": "6",
+      "year": "2024",
+      "date": "Jan. 28",
+      "title": "大墨诞生",
+      "description": "魔丸出世",
+      "image":"/logs/doggies/demo.png",
+      "category": "milestone",
+      "dogNames": ["大墨"]
+    },
+    {
+      "id": "7",
+      "year": "2023",
+      "date": "Dec. 02",
+      "title": "有米诞生",
+      "description": "有米有钱",
+      "image":"/logs/doggies/yumi.png",
+      "category": "milestone",
+      "dogNames": ["有米"]
+    },
+    {
+      "id": "8",
+      "year": "2020",
+      "date": "Feb. 07",
+      "title": "猪皮诞生",
+      "description": "丘比特",
+      "image":"/logs/doggies/jupyter.png",
+      "category": "milestone",
+      "dogNames": ["猪皮"]
+    },
+    {
+      "id": "9",
+      "year": "2023",
+      "date": "Dec. 15",
+      "title": "巴布豆诞生",
+      "description": "小豆萌芽",
+      "image":"/logs/doggies/bobdough.png",
+      "category": "milestone",
+      "dogNames": ["巴布豆"]
+    },
+    {
+      "id": "10",
+      "year": "2021",
+      "date": "Jul. 16",
+      "title": "悠米诞生",
+      "description": "大嗓门喊着出生",
+      "image":"/logs/doggies/yuumi.png",
+      "category": "milestone",
+      "dogNames": ["悠米"]
+    },
+    {
+      "id": "11",
+      "year": "2023",
+      "date": "Dec. 05",
+      "title": "福宝诞生",
+      "description": "刀疤降临",
+      "image":"/logs/doggies/furball.png",
+      "category": "milestone",
+      "dogNames": ["福宝"]
+    },
+    {
+      "id": "12",
+      "year": "2022",
+      "date": "Jun. 22",
+      "title": "Dora诞生",
+      "description": "加多宝？",
+      "image":"/logs/doggies/dora.png",
+      "category": "milestone",
+      "dogNames": ["Dora"]
+    },
+    {
+      "id": "13",
+      "year": "2024",
+      "date": "Apr. 30",
+      "title": "八饼诞生",
+      "description": "公主小妹",
+      "image":"/logs/doggies/bastet.png",
+      "category": "milestone",
+      "dogNames": ["八饼"]
+    },
+    {
+      "id": "14",
+      "year": "2024",
+      "date": "Jan. 24",
+      "title": "Bubble诞生",
+      "description": "爸爸原谅我的不告而来",
+      "image":"/logs/doggies/bubble.png",
+      "category": "milestone",
+      "dogNames": ["Bubble"]
+    },
   ]
 }
