@@ -40,6 +40,8 @@ const toEventTimestamp = (event: { year: string; date: string }) => {
 };
 
 const EventSection = React.memo(({ event, index, isMobile, onOpenDetail }: { event: any; index: number; isMobile: boolean; onOpenDetail: (e: any) => void }) => {
+  const useFixedImageSize = Boolean(event.image) && Boolean(event.fixedImageSize);
+
   return (
     <div 
       className={cn(
@@ -124,7 +126,10 @@ const EventSection = React.memo(({ event, index, isMobile, onOpenDetail }: { eve
         {!isMobile ? (
           <div className="flex-1 flex flex-col justify-start pt-8 px-12">
             {event.image && (
-              <div className="relative w-full max-w-[320px] overflow-hidden bg-muted/10 group rounded-sm shadow-sm">
+              <div className={cn(
+                "relative w-full overflow-hidden bg-muted/10 group rounded-sm shadow-sm",
+                useFixedImageSize ? "max-w-[260px] aspect-[4/5]" : "max-w-[320px]"
+              )}>
                 <motion.img 
                   initial={{ opacity: 0, scale: 1.1 }}
                   whileInView={{ opacity: 1, scale: 1.05 }}
@@ -133,7 +138,10 @@ const EventSection = React.memo(({ event, index, isMobile, onOpenDetail }: { eve
                   src={`${import.meta.env.BASE_URL}${event.image}`} 
                   alt={event.title}
                   loading="lazy"
-                  className="w-full h-auto transition-transform duration-700 ease-in-out group-hover:scale-100"
+                  className={cn(
+                    "w-full transition-transform duration-700 ease-in-out group-hover:scale-100",
+                    useFixedImageSize ? "h-full object-cover" : "h-auto"
+                  )}
                   referrerPolicy="no-referrer"
                 />
                 <div className="absolute inset-0 border border-white/10 pointer-events-none" />
@@ -142,7 +150,10 @@ const EventSection = React.memo(({ event, index, isMobile, onOpenDetail }: { eve
           </div>
         ) : (
           event.image && (
-            <div className="relative w-full max-w-[320px] overflow-hidden bg-muted/10 group rounded-sm shadow-sm">
+            <div className={cn(
+              "relative w-full overflow-hidden bg-muted/10 group rounded-sm shadow-sm",
+              useFixedImageSize ? "max-w-[240px] aspect-[4/5]" : "max-w-[320px]"
+            )}>
               <motion.img 
                 initial={{ opacity: 0 }}
                 whileInView={{ opacity: 1 }}
@@ -151,7 +162,10 @@ const EventSection = React.memo(({ event, index, isMobile, onOpenDetail }: { eve
                 src={`${import.meta.env.BASE_URL}${event.image}`} 
                 alt={event.title}
                 loading="lazy"
-                className="w-full h-auto"
+                className={cn(
+                  "w-full",
+                  useFixedImageSize ? "h-full object-cover" : "h-auto"
+                )}
                 referrerPolicy="no-referrer"
               />
             </div>
@@ -545,11 +559,16 @@ export default function App() {
                   </div>
 
                   {selectedEvent.image && (
-                    <div className="pt-8">
+                    <div className={cn("pt-8", selectedEvent.fixedImageSize ? "flex justify-center" : "") }>
                       <img 
                         src={`${import.meta.env.BASE_URL}${selectedEvent.image}`} 
                         alt={selectedEvent.title}
-                        className="w-full h-auto rounded-sm shadow-lg"
+                        className={cn(
+                          "rounded-sm shadow-lg",
+                          selectedEvent.fixedImageSize
+                            ? "w-full max-w-[320px] aspect-[4/5] object-cover"
+                            : "w-full h-auto"
+                        )}
                         referrerPolicy="no-referrer"
                       />
                     </div>

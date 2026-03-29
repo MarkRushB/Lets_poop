@@ -7,6 +7,7 @@ export interface ChronicleEvent {
   title: string;
   description: string;
   image?: string;
+  fixedImageSize?: boolean;
   category: 'milestone' | 'funny' | 'meeting' | 'legend';
   dogNames?: string[];
 }

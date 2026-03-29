@@ -55,6 +55,7 @@
       "title": "大墨诞生",
       "description": "魔丸出世",
       "image":"/logs/doggies/demo.png",
+      "fixedImageSize": true,
       "category": "milestone",
       "dogNames": ["大墨"]
     },
@@ -65,6 +66,7 @@
       "title": "有米诞生",
       "description": "有米有钱",
       "image":"/logs/doggies/yumi.png",
+      "fixedImageSize": true,
       "category": "milestone",
       "dogNames": ["有米"]
     },
@@ -75,6 +77,7 @@
       "title": "猪皮诞生",
       "description": "丘比特",
       "image":"/logs/doggies/jupyter.png",
+      "fixedImageSize": true,
       "category": "milestone",
       "dogNames": ["猪皮"]
     },
@@ -85,6 +88,7 @@
       "title": "巴布豆诞生",
       "description": "小豆萌芽",
       "image":"/logs/doggies/bobdough.png",
+      "fixedImageSize": true,
       "category": "milestone",
       "dogNames": ["巴布豆"]
     },
@@ -95,6 +99,7 @@
       "title": "悠米诞生",
       "description": "大嗓门喊着出生",
       "image":"/logs/doggies/yuumi.png",
+      "fixedImageSize": true,
       "category": "milestone",
       "dogNames": ["悠米"]
     },
@@ -105,6 +110,7 @@
       "title": "福宝诞生",
       "description": "刀疤降临",
       "image":"/logs/doggies/furball.png",
+      "fixedImageSize": true,
       "category": "milestone",
       "dogNames": ["福宝"]
     },
@@ -115,6 +121,7 @@
       "title": "Dora诞生",
       "description": "加多宝？",
       "image":"/logs/doggies/dora.png",
+      "fixedImageSize": true,
       "category": "milestone",
       "dogNames": ["Dora"]
     },
@@ -125,6 +132,7 @@
       "title": "八饼诞生",
       "description": "公主小妹",
       "image":"/logs/doggies/bastet.png",
+      "fixedImageSize": true,
       "category": "milestone",
       "dogNames": ["八饼"]
     },
@@ -135,6 +143,7 @@
       "title": "Bubble诞生",
       "description": "爸爸原谅我的不告而来",
       "image":"/logs/doggies/bubble.png",
+      "fixedImageSize": true,
       "category": "milestone",
       "dogNames": ["Bubble"]
     }
