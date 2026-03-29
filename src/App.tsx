@@ -100,7 +100,7 @@ const EventSection = React.memo(({ event, index, isMobile, onOpenDetail }: { eve
                   whileInView={{ opacity: 1, scale: 1.05 }}
                   viewport={{ once: true, margin: "200px" }}
                   transition={{ duration: 0.8, ease: "easeOut" }}
-                  src={event.image} 
+                  src={`${import.meta.env.BASE_URL}${event.image}`} 
                   alt={event.title}
                   loading="lazy"
                   className="w-full h-auto transition-transform duration-700 ease-in-out group-hover:scale-100"
@@ -118,7 +118,7 @@ const EventSection = React.memo(({ event, index, isMobile, onOpenDetail }: { eve
                 whileInView={{ opacity: 1 }}
                 viewport={{ once: true, margin: "100px" }}
                 transition={{ duration: 0.6 }}
-                src={event.image} 
+                src={`${import.meta.env.BASE_URL}${event.image}`} 
                 alt={event.title}
                 loading="lazy"
                 className="w-full h-auto"
@@ -372,7 +372,7 @@ export default function App() {
                   initial={{ opacity: 0, scale: 0.8, y: 20 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   transition={{ duration: 1, delay: 0.2 }}
-                  src="/dogs/dogs_group.png" 
+                  src={`${import.meta.env.BASE_URL}dogs/dogs_group.png`} 
                   className="w-full max-w-4xl h-auto object-contain drop-shadow-xl opacity-90 -translate-y-32 md:-translate-y-56 will-change-transform"
                   referrerPolicy="no-referrer"
                   loading="eager"
@@ -507,7 +507,7 @@ export default function App() {
                   {selectedEvent.image && (
                     <div className="pt-8">
                       <img 
-                        src={selectedEvent.image} 
+                        src={`${import.meta.env.BASE_URL}${selectedEvent.image}`} 
                         alt={selectedEvent.title}
                         className="w-full h-auto rounded-sm shadow-lg"
                         referrerPolicy="no-referrer"
