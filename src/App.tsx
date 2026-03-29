@@ -129,7 +129,7 @@ const EventSection = React.memo(({ event, index, isMobile, onOpenDetail }: { eve
           <div className="flex-1 flex flex-col justify-start pt-8 px-12">
             {event.image && (
               <div className={cn(
-                "relative overflow-hidden group rounded-sm shadow-sm",
+                "relative group",
                 useFixedImageSize ? "mx-auto shrink-0" : "w-full max-w-[320px]"
               )}
               style={useFixedImageSize ? FIXED_IMAGE_FRAME_STYLE : undefined}>
@@ -147,14 +147,13 @@ const EventSection = React.memo(({ event, index, isMobile, onOpenDetail }: { eve
                   )}
                   referrerPolicy="no-referrer"
                 />
-                <div className="absolute inset-0 border border-white/10 pointer-events-none" />
               </div>
             )}
           </div>
         ) : (
           event.image && (
             <div className={cn(
-              "relative overflow-hidden group rounded-sm shadow-sm",
+              "relative group",
               useFixedImageSize ? "mx-auto shrink-0" : "w-full max-w-[320px]"
             )}
             style={useFixedImageSize ? FIXED_IMAGE_FRAME_STYLE : undefined}>
