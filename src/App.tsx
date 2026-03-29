@@ -39,6 +39,8 @@ const toEventTimestamp = (event: { year: string; date: string }) => {
   return new Date(year, month, day).getTime();
 };
 
+const FIXED_IMAGE_FRAME_CLASS = "w-[200px] h-[250px]";
+
 const EventSection = React.memo(({ event, index, isMobile, onOpenDetail }: { event: any; index: number; isMobile: boolean; onOpenDetail: (e: any) => void }) => {
   const useFixedImageSize = Boolean(event.image) && Boolean(event.fixedImageSize);
 
@@ -127,8 +129,8 @@ const EventSection = React.memo(({ event, index, isMobile, onOpenDetail }: { eve
           <div className="flex-1 flex flex-col justify-start pt-8 px-12">
             {event.image && (
               <div className={cn(
-                "relative w-full overflow-hidden bg-muted/10 group rounded-sm shadow-sm",
-                useFixedImageSize ? "max-w-[260px] aspect-[4/5]" : "max-w-[320px]"
+                "relative overflow-hidden bg-muted/10 group rounded-sm shadow-sm",
+                useFixedImageSize ? FIXED_IMAGE_FRAME_CLASS : "w-full max-w-[320px]"
               )}>
                 <motion.img 
                   initial={{ opacity: 0, scale: 1.1 }}
@@ -139,8 +141,8 @@ const EventSection = React.memo(({ event, index, isMobile, onOpenDetail }: { eve
                   alt={event.title}
                   loading="lazy"
                   className={cn(
-                    "w-full transition-transform duration-700 ease-in-out group-hover:scale-100",
-                    useFixedImageSize ? "h-full object-cover" : "h-auto"
+                    "transition-transform duration-700 ease-in-out group-hover:scale-100",
+                    useFixedImageSize ? "w-full h-full object-cover" : "w-full h-auto"
                   )}
                   referrerPolicy="no-referrer"
                 />
@@ -151,8 +153,8 @@ const EventSection = React.memo(({ event, index, isMobile, onOpenDetail }: { eve
         ) : (
           event.image && (
             <div className={cn(
-              "relative w-full overflow-hidden bg-muted/10 group rounded-sm shadow-sm",
-              useFixedImageSize ? "max-w-[240px] aspect-[4/5]" : "max-w-[320px]"
+              "relative overflow-hidden bg-muted/10 group rounded-sm shadow-sm",
+              useFixedImageSize ? FIXED_IMAGE_FRAME_CLASS : "w-full max-w-[320px]"
             )}>
               <motion.img 
                 initial={{ opacity: 0 }}
@@ -163,8 +165,7 @@ const EventSection = React.memo(({ event, index, isMobile, onOpenDetail }: { eve
                 alt={event.title}
                 loading="lazy"
                 className={cn(
-                  "w-full",
-                  useFixedImageSize ? "h-full object-cover" : "h-auto"
+                  useFixedImageSize ? "w-full h-full object-cover" : "w-full h-auto"
                 )}
                 referrerPolicy="no-referrer"
               />
@@ -566,7 +567,7 @@ export default function App() {
                         className={cn(
                           "rounded-sm shadow-lg",
                           selectedEvent.fixedImageSize
-                            ? "w-full max-w-[320px] aspect-[4/5] object-cover"
+                            ? `${FIXED_IMAGE_FRAME_CLASS} object-cover`
                             : "w-full h-auto"
                         )}
                         referrerPolicy="no-referrer"
