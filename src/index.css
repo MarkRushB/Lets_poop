@@ -1,0 +1,63 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@200..900&family=Inter:wght@100..900&family=Space+Grotesk:wght@300..700&display=swap');
+
+@theme {
+  --font-sans: "Inter", "Noto Serif SC", sans-serif;
+  --font-display: "Space Grotesk", "Noto Serif SC", sans-serif;
+  --font-serif: "Noto Serif SC", serif;
+
+  --color-bg: #FDFCFB; /* Light Off-White Background */
+  --color-fg: #1A1A1A; /* Dark Text for Contrast */
+  --color-accent: #5A5A40; /* Olive/Warm Accent */
+  --color-muted: #E5E5E0; /* Light gray for muted elements */
+}
+
+.bg-paper {
+  @apply bg-bg relative;
+}
+
+.bg-paper::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: 
+    radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  background-size: 32px 32px, 180px 180px;
+  opacity: 0.15;
+  pointer-events: none;
+  z-index: -1;
+  mix-blend-mode: overlay;
+}
+
+@layer base {
+  body {
+    @apply bg-bg text-fg font-sans antialiased selection:bg-accent selection:text-bg overflow-x-hidden;
+  }
+}
+
+.text-stroke {
+  -webkit-text-stroke: 1.5px rgba(26, 26, 26, 0.15);
+  color: transparent;
+}
+
+.horizontal-line {
+  @apply bg-accent/30;
+}
+
+.event-dot {
+  @apply bg-accent border-4 border-bg;
+}
+
+/* Custom scrollbar for horizontal exploration */
+::-webkit-scrollbar {
+  height: 4px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-muted/20;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-accent/40 rounded-full;
+}

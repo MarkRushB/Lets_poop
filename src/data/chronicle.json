@@ -1,0 +1,52 @@
+{
+  "title": "一起拉屎好吗？",
+  "subtitle": "sl 狗狗群编年史",
+  "events": [
+    {
+      "id": "1",
+      "year": "2025",
+      "date": "Aug. 19",
+      "title": "小狗全体失去重要功能纪念日",
+      "description": "不会再爱了",
+      "category": "milestone",
+      "dogNames": ["八饼", "巴布豆", "berry", "bubble", "大墨", "dora", "福宝", "Yuumi", "有米", "猪皮"]
+    },
+    {
+      "id": "2",
+      "year": "2026",
+      "date": "Feb. 19",
+      "title": "马年大吉",
+      "description": "全体小狗恭贺新春，马年睡大觉，拉大屎",
+      "category": "milestone",
+      "dogNames": ["八饼", "巴布豆", "berry", "bubble", "大墨", "dora", "福宝", "Yuumi", "有米", "猪皮"]
+    },
+    {
+      "id": "3",
+      "year": "2026",
+      "date": "Feb. 27",
+      "title": "平头边牧和棕色柯基",
+      "description": "平头小帅哥，这是柯基吧？",
+      "category": "milestone",
+      "dogNames": ["八饼", "大墨"]
+    },
+    {
+      "id": "4",
+      "year": "2026",
+      "date": "Mar. 01",
+      "title": "魔丸？",
+      "description": "稳重！",
+      "category": "milestone",
+      "dogNames": ["大墨"]
+    },
+    {
+      "id": "5",
+      "year": "2026",
+      "date": "Mar. 23",
+      "title": "忌冷落小狗",
+      "description": "全体做到",
+      "image":"/logs/20260323/0323.jpg",
+      "category": "milestone",
+      "dogNames": ["八饼", "巴布豆", "berry", "bubble", "大墨", "dora", "福宝", "Yuumi", "有米", "猪皮"]
+    }
+  ]
+}
