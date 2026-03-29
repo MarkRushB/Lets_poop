@@ -40,16 +40,25 @@ const toEventTimestamp = (event: { year: string; date: string }) => {
 };
 
 const FIXED_IMAGE_FRAME_STYLE = { width: 180, height: 220 } as const;
+const DESKTOP_EVENT_CARD_WIDTH = 430;
+const DESCRIPTION_PREVIEW_MAX = 30;
+
+const getDescriptionPreview = (text: string) => {
+  if (text.length <= DESCRIPTION_PREVIEW_MAX) return text;
+  return `${text.slice(0, DESCRIPTION_PREVIEW_MAX).trimEnd()}...`;
+};
 
 const EventSection = React.memo(({ event, index, isMobile, onOpenDetail }: { event: any; index: number; isMobile: boolean; onOpenDetail: (e: any) => void }) => {
   const useFixedImageSize = Boolean(event.image) && Boolean(event.fixedImageSize);
+  const shouldShowReadMore = event.description.length > DESCRIPTION_PREVIEW_MAX;
 
   return (
     <div 
       className={cn(
         "relative flex flex-col shrink-0",
-        !isMobile ? "w-[450px] h-screen border-r border-muted/30" : "w-full py-12 px-6 border-b border-muted/30"
+        !isMobile ? "h-screen border-r border-muted/30" : "w-full py-12 px-6 border-b border-muted/30"
       )}
+      style={!isMobile ? { width: DESKTOP_EVENT_CARD_WIDTH } : undefined}
     >
       {/* Connecting Line (Desktop) */}
       {!isMobile && (
@@ -104,25 +113,32 @@ const EventSection = React.memo(({ event, index, isMobile, onOpenDetail }: { eve
             
             <div className={cn(
               "space-y-3",
-              isMobile ? "" : "mt-4 h-[120px] overflow-hidden"
+              isMobile ? "" : "mt-4 h-[120px] flex flex-col"
             )}>
               <h3 
                 onClick={() => onOpenDetail(event)}
-                className="font-serif text-xl md:text-2xl font-bold text-fg leading-tight cursor-pointer hover:text-accent transition-colors line-clamp-2"
+                className="font-serif text-lg md:text-xl font-bold text-fg leading-tight cursor-pointer hover:text-accent transition-colors shrink-0"
               >
                 {event.title}
               </h3>
               <div 
-                onClick={() => onOpenDetail(event)}
-                className="cursor-pointer group"
+                className="group flex-1 min-h-0"
               >
-                <p className="text-fg/70 text-sm md:text-base max-w-xs leading-relaxed font-serif line-clamp-2">
-                  {event.description}
-                </p>
-                {event.description.length > 40 && (
-                  <span className="text-[10px] font-bold text-accent uppercase tracking-tighter mt-1 inline-block opacity-60 group-hover:opacity-100 transition-opacity">
-                    展开全文 →
-                  </span>
+                {shouldShowReadMore ? (
+                  <p className="text-fg/70 text-sm md:text-base max-w-xs leading-relaxed font-serif max-h-[3.5rem] overflow-hidden">
+                    {`${getDescriptionPreview(event.description)} `}
+                    <button
+                      type="button"
+                      onClick={() => onOpenDetail(event)}
+                      className="inline-flex items-center gap-1 text-[0.85em] font-serif font-normal text-fg/45 hover:text-fg/60 transition-colors align-baseline whitespace-nowrap"
+                    >
+                      阅读更多
+                    </button>
+                  </p>
+                ) : (
+                  <p className="text-fg/70 text-sm md:text-base max-w-xs leading-relaxed font-serif line-clamp-2">
+                    {event.description}
+                  </p>
                 )}
               </div>
             </div>
@@ -258,11 +274,11 @@ export default function App() {
   });
 
   // Calculate total width for horizontal scroll
-  // Hero (100vw) + Events (N * 450px) + End (100vw)
+  // Hero (100vw) + Events (N * DESKTOP_EVENT_CARD_WIDTH) + End (100vw)
   const totalHorizontalScroll = useMemo(() => {
     if (typeof window === 'undefined') return 0;
     if (isMobile) return 0;
-    return window.innerWidth + (filteredEvents.length * 450);
+    return window.innerWidth + (filteredEvents.length * DESKTOP_EVENT_CARD_WIDTH);
   }, [isMobile, filteredEvents.length]);
 
   const x = useTransform(scrollYProgress, [0, 1], [0, -totalHorizontalScroll]);
@@ -288,7 +304,7 @@ export default function App() {
     } else {
       // Precise centering logic for desktop horizontal scroll
       const vw = window.innerWidth;
-      const targetX = vw + (index * 450) + 225 - (vw * 0.5);
+      const targetX = vw + (index * DESKTOP_EVENT_CARD_WIDTH) + (DESKTOP_EVENT_CARD_WIDTH * 0.5) - (vw * 0.5);
       
       const targetProgress = targetX / totalHorizontalScroll;
       
