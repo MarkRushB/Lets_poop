@@ -80,25 +80,35 @@ const EventSection = React.memo(({ event, index, isMobile, onOpenDetail }: { eve
           </div>
 
           {/* Main Content */}
-          <div className="space-y-4 relative mt-6">
+          <div className={cn(
+            "relative mt-6",
+            isMobile ? "space-y-4" : "h-[176px]"
+          )}>
             {!event.image && !isMobile && (
               <div className="absolute -top-16 -left-8 opacity-[0.04] pointer-events-none">
                 <PawPrint size={200} className="text-accent" />
               </div>
             )}
 
-            <div className="flex flex-wrap gap-2">
+            <div className={cn(
+              isMobile ? "" : "h-[44px] overflow-hidden"
+            )}>
+              <div className="flex flex-wrap gap-2 content-start max-h-full overflow-hidden">
               {event.dogNames?.map((dog: string) => (
                 <span key={dog} className="px-2 py-0.5 bg-accent/10 text-accent text-[9px] font-bold rounded-full tracking-wider">
                   @{dog}
                 </span>
               ))}
+              </div>
             </div>
             
-            <div className="space-y-3">
+            <div className={cn(
+              "space-y-3",
+              isMobile ? "" : "mt-4 h-[120px] overflow-hidden"
+            )}>
               <h3 
                 onClick={() => onOpenDetail(event)}
-                className="font-serif text-xl md:text-2xl font-bold text-fg leading-tight cursor-pointer hover:text-accent transition-colors"
+                className="font-serif text-xl md:text-2xl font-bold text-fg leading-tight cursor-pointer hover:text-accent transition-colors line-clamp-2"
               >
                 {event.title}
               </h3>
