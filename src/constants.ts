@@ -10,6 +10,7 @@ export interface ChronicleEvent {
   fixedImageSize?: boolean;
   audio?: string;
   video?: string;
+  videoPoster?: string;
   category: 'milestone' | 'funny' | 'meeting' | 'legend';
   dogNames?: string[];
 }
