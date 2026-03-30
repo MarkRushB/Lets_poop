@@ -238,6 +238,19 @@
       "dogNames": [
         "大墨"
       ]
+    },
+    {
+      "id": "18",
+      "year": "2024",
+      "date": "Aug. 13",
+      "title": "爱在日落黄昏时",
+      "description": "年少的达摩不懂爱，懵懂的八饼不会爱",
+      "category": "milestone",
+      "dogNames": [
+        "八饼",
+        "大墨"
+      ],
+      "image": "logs/20240813/issue-14.jpg"
     }
   ]
 }
