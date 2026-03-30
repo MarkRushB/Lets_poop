@@ -166,6 +166,16 @@
       "image":"/logs/20251018/52595.JPEG",
       "category": "milestone",
       "dogNames": ["有米"]
+    },
+    {
+      "id": "17",
+      "year": "2025",
+      "date": "Jun. 09",
+      "title": "Demo Go Swim!",
+      "description": "父母在，不远游",
+      "image":"/logs/20250609/demoswim.jpg",
+      "category": "milestone",
+      "dogNames": ["大墨"]
     }
   ]
 }
