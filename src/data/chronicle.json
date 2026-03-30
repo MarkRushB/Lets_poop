@@ -275,6 +275,19 @@
         "巴布豆"
       ],
       "image": "logs/20251105/issue-19.jpg"
+    },
+    {
+      "id": "21",
+      "year": "2024",
+      "date": "Aug. 13",
+      "title": "饼墨初见",
+      "description": "年少的达摩不懂爱，懵懂的八饼不会爱",
+      "category": "milestone",
+      "dogNames": [
+        "八饼",
+        "大墨"
+      ],
+      "video": "logs/20240813/issue-23-video.mov"
     }
   ]
 }
