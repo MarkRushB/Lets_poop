@@ -1,3 +1,7 @@
+# 感谢小狗，计算机，电，AI，还有创造力。
+<details>
+<summary>paw tap to view tech stacks and deployment runbook</summary>
+
 # 小狗一起拉屎好吗？ / Let's Poop Together?
 
 > **sl 狗狗群编年史** — 一个记录小狗群日常历史的横向滚动时间轴网站。
@@ -166,3 +170,5 @@ Every push to the `main` branch triggers GitHub Actions to build the project and
 **Required configuration**:
 - `GH_PAT` (repository secret): A fine-grained Personal Access Token with write permissions for `Contents`, `Pull requests`, and `Workflows` — used by the Issue-to-PR automation.
 - `GEMINI_API_KEY` (repository secret, optional): Required if Gemini AI features are enabled.
+
+</details>
