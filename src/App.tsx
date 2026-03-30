@@ -42,11 +42,78 @@ const toEventTimestamp = (event: { year: string; date: string }) => {
 const FIXED_IMAGE_FRAME_STYLE = { width: 180, height: 220 } as const;
 const DESKTOP_EVENT_CARD_WIDTH = 430;
 const DESCRIPTION_PREVIEW_MAX = 30;
+const POSTER_JPEG_QUALITY = 0.8;
 
 const getDescriptionPreview = (text: string) => {
   if (text.length <= DESCRIPTION_PREVIEW_MAX) return text;
   return `${text.slice(0, DESCRIPTION_PREVIEW_MAX).trimEnd()}...`;
 };
+
+/**
+ * VideoPlayer automatically captures a cover frame from the video at 1 second
+ * (or 10 % of the duration for very short clips) using the Canvas API.
+ * An explicit `poster` prop can be supplied as an override.
+ */
+const VideoPlayer = React.memo(({ src, poster, className }: { src: string; poster?: string; className?: string }) => {
+  const [computedPoster, setComputedPoster] = useState<string | undefined>(poster);
+
+  useEffect(() => {
+    if (poster) {
+      setComputedPoster(poster);
+      return;
+    }
+
+    let cancelled = false;
+    const probe = document.createElement('video');
+    probe.preload = 'metadata';
+    probe.muted = true;
+    // crossOrigin = 'anonymous' is required for canvas.toDataURL() to work;
+    // omitting it would taint the canvas for same-origin video served without CORS headers.
+    probe.crossOrigin = 'anonymous';
+    probe.playsInline = true;
+
+    const captureFrame = () => {
+      if (cancelled || probe.videoWidth === 0) return;
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = probe.videoWidth;
+        canvas.height = probe.videoHeight;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(probe, 0, 0);
+          const dataUrl = canvas.toDataURL('image/jpeg', POSTER_JPEG_QUALITY);
+          if (!cancelled) setComputedPoster(dataUrl);
+        }
+      } catch {
+        // Cross-origin or other restriction — no poster
+      } finally {
+        probe.src = '';
+      }
+    };
+
+    const onLoadedMetadata = () => {
+      if (!probe.duration || !Number.isFinite(probe.duration)) return;
+      probe.currentTime = Math.min(1, probe.duration * 0.1);
+    };
+
+    probe.addEventListener('loadedmetadata', onLoadedMetadata);
+    probe.addEventListener('seeked', captureFrame);
+    probe.src = src;
+
+    return () => {
+      cancelled = true;
+      probe.removeEventListener('loadedmetadata', onLoadedMetadata);
+      probe.removeEventListener('seeked', captureFrame);
+      probe.src = '';
+    };
+  }, [src, poster]);
+
+  return (
+    <video controls className={className} preload="metadata" poster={computedPoster}>
+      <source src={src} />
+    </video>
+  );
+});
 
 const EventSection = React.memo(({ event, index, isMobile, onOpenDetail }: { event: any; index: number; isMobile: boolean; onOpenDetail: (e: any) => void }) => {
   const useFixedImageSize = Boolean(event.image) && Boolean(event.fixedImageSize);
@@ -155,14 +222,11 @@ const EventSection = React.memo(({ event, index, isMobile, onOpenDetail }: { eve
           <div className="flex-1 flex flex-col justify-start pt-8 px-12 gap-4">
             {event.video && (
               <div className="w-full max-w-[320px]">
-                <video
-                  controls
-                  className="w-full rounded-sm shadow-lg"
-                  preload="metadata"
+                <VideoPlayer
+                  src={`${import.meta.env.BASE_URL}${event.video}`}
                   poster={event.videoPoster ? `${import.meta.env.BASE_URL}${event.videoPoster}` : undefined}
-                >
-                  <source src={`${import.meta.env.BASE_URL}${event.video}`} />
-                </video>
+                  className="w-full rounded-sm shadow-lg"
+                />
               </div>
             )}
             {event.image && (
@@ -172,15 +236,14 @@ const EventSection = React.memo(({ event, index, isMobile, onOpenDetail }: { eve
               )}
               style={useFixedImageSize ? FIXED_IMAGE_FRAME_STYLE : undefined}>
                 <motion.img 
-                  initial={{ opacity: 0, scale: 1.1 }}
-                  whileInView={{ opacity: 1, scale: 1.05 }}
-                  viewport={{ once: true, margin: "200px" }}
-                  transition={{ duration: 0.8, ease: "easeOut" }}
+                  initial={{ opacity: 0 }}
+                  whileInView={{ opacity: 1 }}
+                  viewport={{ once: true, margin: "100px" }}
+                  transition={{ duration: 0.6 }}
                   src={`${import.meta.env.BASE_URL}${event.image}`} 
                   alt={event.title}
                   loading="lazy"
                   className={cn(
-                    "transition-transform duration-700 ease-in-out group-hover:scale-100",
                     useFixedImageSize ? "w-full h-full object-contain object-top" : "w-full h-auto"
                   )}
                   referrerPolicy="no-referrer"
@@ -203,14 +266,11 @@ const EventSection = React.memo(({ event, index, isMobile, onOpenDetail }: { eve
           <div className="flex flex-col gap-4">
             {event.video && (
               <div className="w-full max-w-[320px]">
-                <video
-                  controls
-                  className="w-full rounded-sm shadow-lg"
-                  preload="metadata"
+                <VideoPlayer
+                  src={`${import.meta.env.BASE_URL}${event.video}`}
                   poster={event.videoPoster ? `${import.meta.env.BASE_URL}${event.videoPoster}` : undefined}
-                >
-                  <source src={`${import.meta.env.BASE_URL}${event.video}`} />
-                </video>
+                  className="w-full rounded-sm shadow-lg"
+                />
               </div>
             )}
             {event.image && (
@@ -658,14 +718,11 @@ export default function App() {
 
                   {selectedEvent.video && (
                     <div className="pt-8">
-                      <video
-                        controls
-                        className="w-full rounded-sm shadow-lg"
-                        preload="metadata"
+                      <VideoPlayer
+                        src={`${import.meta.env.BASE_URL}${selectedEvent.video}`}
                         poster={selectedEvent.videoPoster ? `${import.meta.env.BASE_URL}${selectedEvent.videoPoster}` : undefined}
-                      >
-                        <source src={`${import.meta.env.BASE_URL}${selectedEvent.video}`} />
-                      </video>
+                        className="w-full rounded-sm shadow-lg"
+                      />
                     </div>
                   )}
 
