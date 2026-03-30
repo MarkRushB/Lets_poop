@@ -1,8 +1,6 @@
 name: 新增编年史事件
 description: 用表单提交一条新的小狗群编年史事件
 title: "[编年史] "
-labels:
-  - timeline-entry
 body:
   - type: input
     id: event_date
