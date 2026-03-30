@@ -263,6 +263,18 @@
         "Bubble",
         "有米"
       ]
+    },
+    {
+      "id": "20",
+      "year": "2025",
+      "date": "Nov. 05",
+      "title": "黑色大xx",
+      "description": "毛茸茸，黑色，刚剃过毛",
+      "category": "milestone",
+      "dogNames": [
+        "巴布豆"
+      ],
+      "image": "logs/20251105/issue-19.jpg"
     }
   ]
 }
