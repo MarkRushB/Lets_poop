@@ -31,6 +31,8 @@ const dogNamesRaw = getField('相关小狗');
 const categoryRaw = getField('事件类型');
 // Support both new field name "图片（可选）" and legacy "图片路径（可选）"
 const imageRaw = getField('图片（可选）') || getField('图片路径（可选）');
+const audioRaw = getField('语音条（可选）');
+const videoRaw = getField('视频（可选）');
 
 if (!/^\d{4}-\d{2}-\d{2}$/.test(isoDate)) {
   throw new Error(`Invalid date format: ${isoDate}. Expected YYYY-MM-DD.`);
@@ -86,10 +88,10 @@ const newEvent = {
 };
 
 /**
- * Extract the first HTTP(S) image URL from raw field content.
+ * Extract the first HTTP(S) media URL from raw field content.
  * Handles markdown image syntax ![alt](url) as well as bare URLs.
  */
-function extractImageUrl(raw) {
+function extractMediaUrl(raw) {
   // Markdown image syntax takes priority: ![alt](url)
   const mdMatch = raw.match(/!\[[^\]]*\]\((https?:\/\/[^)]+)\)/);
   if (mdMatch) return mdMatch[1].trim();
@@ -111,6 +113,16 @@ function getExtensionFromContentType(contentType) {
     'image/gif': '.gif',
     'image/webp': '.webp',
     'image/avif': '.avif',
+    'video/mp4': '.mp4',
+    'video/webm': '.webm',
+    'video/quicktime': '.mov',
+    'video/ogg': '.ogv',
+    'audio/mpeg': '.mp3',
+    'audio/mp4': '.m4a',
+    'audio/ogg': '.ogg',
+    'audio/wav': '.wav',
+    'audio/webm': '.weba',
+    'audio/aac': '.aac',
   };
   return ctMap[contentType] ?? '.jpg';
 }
@@ -119,13 +131,12 @@ let resolvedImagePath = null;
 
 // Ignore empty values and the GitHub "no response" placeholder
 if (imageRaw && imageRaw !== '_No response_') {
-  const imageUrl = extractImageUrl(imageRaw);
+  const imageUrl = extractMediaUrl(imageRaw);
 
   if (imageUrl) {
     // Download the image and commit it under public/logs/YYYYMMDD/
     const dateFolder = `${year}${month}${day}`;
     const destDir = path.join(root, 'public/logs', dateFolder);
-
     // Determine file extension from URL path or Content-Type header
     let parsedUrl;
     try {
@@ -162,6 +173,57 @@ if (resolvedImagePath) {
   newEvent.image = resolvedImagePath;
 }
 
+/**
+ * Download a media file (audio or video) from a URL and save it locally.
+ * Returns the repo-relative path, or null if nothing to download.
+ */
+async function downloadMediaFile(rawField, mediaLabel) {
+  if (!rawField || rawField === '_No response_') return null;
+
+  const mediaUrl = extractMediaUrl(rawField);
+  if (!mediaUrl) return null;
+
+  let parsedUrl;
+  try {
+    parsedUrl = new URL(mediaUrl);
+  } catch {
+    throw new Error(`Invalid ${mediaLabel} URL: ${mediaUrl}`);
+  }
+
+  let ext = path.extname(parsedUrl.pathname);
+  const response = await fetch(mediaUrl);
+  if (!response.ok) {
+    throw new Error(`Failed to download ${mediaLabel}: ${response.status} ${response.statusText}`);
+  }
+  if (!ext) {
+    const contentType = (response.headers.get('content-type') ?? '').split(';')[0].trim();
+    ext = getExtensionFromContentType(contentType);
+  }
+
+  const dateFolder = `${year}${month}${day}`;
+  const destDir = path.join(root, 'public/logs', dateFolder);
+  const fileName = `issue-${issue.number}-${mediaLabel}${ext}`;
+  const destPath = path.join(destDir, fileName);
+
+  fs.mkdirSync(destDir, { recursive: true });
+  const buffer = Buffer.from(await response.arrayBuffer());
+  fs.writeFileSync(destPath, buffer);
+
+  console.log(`Downloaded ${mediaLabel} to ${destPath}`);
+  return `logs/${dateFolder}/${fileName}`;
+}
+
+const resolvedAudioPath = await downloadMediaFile(audioRaw, 'audio');
+const resolvedVideoPath = await downloadMediaFile(videoRaw, 'video');
+
+if (resolvedAudioPath) {
+  newEvent.audio = resolvedAudioPath;
+}
+
+if (resolvedVideoPath) {
+  newEvent.video = resolvedVideoPath;
+}
+
 chronicle.events = [...events, newEvent];
 fs.writeFileSync(chroniclePath, `${JSON.stringify(chronicle, null, 2)}\n`, 'utf8');
 
@@ -174,7 +236,9 @@ const summary = [
   `- 标题：${title}`,
   `- 类型：${category}`,
   `- 小狗：${dogNames.join('、')}`,
-  resolvedImagePath ? `- 图片：${resolvedImagePath}` : '- 图片：无'
+  resolvedImagePath ? `- 图片：${resolvedImagePath}` : '- 图片：无',
+  resolvedAudioPath ? `- 语音条：${resolvedAudioPath}` : '- 语音条：无',
+  resolvedVideoPath ? `- 视频：${resolvedVideoPath}` : '- 视频：无',
 ].join('\n');
 
 fs.writeFileSync(summaryPath, `${summary}\n`, 'utf8');
