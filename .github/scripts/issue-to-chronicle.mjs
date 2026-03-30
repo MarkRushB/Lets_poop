@@ -19,7 +19,7 @@ const body = issue.body ?? '';
 
 const getField = (name) => {
   const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const regex = new RegExp(`###\\s*${escaped}\\n([\\s\\S]*?)(?=\\n###\\s|$)`, 'm');
+  const regex = new RegExp(`###\\s*${escaped}\\n([\\s\\S]*?)(?=\\n###\\s|$)`);
   const match = body.match(regex);
   return match?.[1]?.trim() ?? '';
 };
