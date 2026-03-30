@@ -8,6 +8,8 @@ export interface ChronicleEvent {
   description: string;
   image?: string;
   fixedImageSize?: boolean;
+  audio?: string;
+  video?: string;
   category: 'milestone' | 'funny' | 'meeting' | 'legend';
   dogNames?: string[];
 }

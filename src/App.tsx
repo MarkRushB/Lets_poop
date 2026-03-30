@@ -93,7 +93,7 @@ const EventSection = React.memo(({ event, index, isMobile, onOpenDetail }: { eve
             "relative mt-6",
             isMobile ? "space-y-4" : "h-[176px]"
           )}>
-            {!event.image && !isMobile && (
+            {!event.image && !event.video && !event.audio && !isMobile && (
               <div className="absolute -top-16 -left-8 opacity-[0.04] pointer-events-none">
                 <PawPrint size={200} className="text-accent" />
               </div>
@@ -150,9 +150,20 @@ const EventSection = React.memo(({ event, index, isMobile, onOpenDetail }: { eve
           <div className="absolute top-1/2 -left-[6px] w-3 h-3 rounded-full event-dot -translate-y-1/2 z-20" />
         )}
 
-        {/* Bottom Half: Image Content (Desktop) */}
+        {/* Bottom Half: Image/Video/Audio Content (Desktop) */}
         {!isMobile ? (
-          <div className="flex-1 flex flex-col justify-start pt-8 px-12">
+          <div className="flex-1 flex flex-col justify-start pt-8 px-12 gap-4">
+            {event.video && (
+              <div className="w-full max-w-[320px]">
+                <video
+                  controls
+                  className="w-full rounded-sm shadow-lg"
+                  preload="metadata"
+                >
+                  <source src={`${import.meta.env.BASE_URL}${event.video}`} />
+                </video>
+              </div>
+            )}
             {event.image && (
               <div className={cn(
                 "relative group",
@@ -175,29 +186,64 @@ const EventSection = React.memo(({ event, index, isMobile, onOpenDetail }: { eve
                 />
               </div>
             )}
+            {event.audio && (
+              <div className="w-full max-w-[320px]">
+                <audio
+                  controls
+                  className="w-full"
+                  preload="metadata"
+                >
+                  <source src={`${import.meta.env.BASE_URL}${event.audio}`} />
+                </audio>
+              </div>
+            )}
           </div>
         ) : (
-          event.image && (
-            <div className={cn(
-              "relative group",
-              useFixedImageSize ? "mx-auto shrink-0" : "w-full max-w-[320px]"
+          <div className="flex flex-col gap-4">
+            {event.video && (
+              <div className="w-full max-w-[320px]">
+                <video
+                  controls
+                  className="w-full rounded-sm shadow-lg"
+                  preload="metadata"
+                >
+                  <source src={`${import.meta.env.BASE_URL}${event.video}`} />
+                </video>
+              </div>
             )}
-            style={useFixedImageSize ? FIXED_IMAGE_FRAME_STYLE : undefined}>
-              <motion.img 
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                viewport={{ once: true, margin: "100px" }}
-                transition={{ duration: 0.6 }}
-                src={`${import.meta.env.BASE_URL}${event.image}`} 
-                alt={event.title}
-                loading="lazy"
-                className={cn(
-                  useFixedImageSize ? "w-full h-full object-contain object-top" : "w-full h-auto"
-                )}
-                referrerPolicy="no-referrer"
-              />
-            </div>
-          )
+            {event.image && (
+              <div className={cn(
+                "relative group",
+                useFixedImageSize ? "mx-auto shrink-0" : "w-full max-w-[320px]"
+              )}
+              style={useFixedImageSize ? FIXED_IMAGE_FRAME_STYLE : undefined}>
+                <motion.img 
+                  initial={{ opacity: 0 }}
+                  whileInView={{ opacity: 1 }}
+                  viewport={{ once: true, margin: "100px" }}
+                  transition={{ duration: 0.6 }}
+                  src={`${import.meta.env.BASE_URL}${event.image}`} 
+                  alt={event.title}
+                  loading="lazy"
+                  className={cn(
+                    useFixedImageSize ? "w-full h-full object-contain object-top" : "w-full h-auto"
+                  )}
+                  referrerPolicy="no-referrer"
+                />
+              </div>
+            )}
+            {event.audio && (
+              <div className="w-full max-w-[320px]">
+                <audio
+                  controls
+                  className="w-full"
+                  preload="metadata"
+                >
+                  <source src={`${import.meta.env.BASE_URL}${event.audio}`} />
+                </audio>
+              </div>
+            )}
+          </div>
         )}
       </div>
     </div>
@@ -605,6 +651,30 @@ export default function App() {
                           referrerPolicy="no-referrer"
                         />
                       )}
+                    </div>
+                  )}
+
+                  {selectedEvent.video && (
+                    <div className="pt-8">
+                      <video
+                        controls
+                        className="w-full rounded-sm shadow-lg"
+                        preload="metadata"
+                      >
+                        <source src={`${import.meta.env.BASE_URL}${selectedEvent.video}`} />
+                      </video>
+                    </div>
+                  )}
+
+                  {selectedEvent.audio && (
+                    <div className="pt-8">
+                      <audio
+                        controls
+                        className="w-full"
+                        preload="metadata"
+                      >
+                        <source src={`${import.meta.env.BASE_URL}${selectedEvent.audio}`} />
+                      </audio>
                     </div>
                   )}
                 </div>

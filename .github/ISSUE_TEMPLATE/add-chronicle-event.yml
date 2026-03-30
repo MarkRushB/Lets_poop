@@ -59,6 +59,24 @@ body:
     validations:
       required: false
 
+  - type: textarea
+    id: audio
+    attributes:
+      label: 语音条（可选）
+      description: 可直接拖放音频文件（mp3、m4a、wav、ogg 等）到此处，GitHub 会自动上传并生成链接
+      placeholder: "拖放音频文件到此处上传"
+    validations:
+      required: false
+
+  - type: textarea
+    id: video
+    attributes:
+      label: 视频（可选）
+      description: 可直接拖放视频文件（mp4、mov、webm 等）到此处，GitHub 会自动上传并生成链接
+      placeholder: "拖放视频文件到此处上传"
+    validations:
+      required: false
+
   - type: markdown
     attributes:
       value: |
