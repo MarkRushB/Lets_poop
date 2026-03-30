@@ -50,12 +50,12 @@ body:
     validations:
       required: true
 
-  - type: input
-    id: image_path
+  - type: textarea
+    id: image
     attributes:
-      label: 图片路径（可选）
-      description: 已经在仓库 public 下的路径，例如 /logs/20260330/new.jpg
-      placeholder: "/logs/20260330/new.jpg"
+      label: 图片（可选）
+      description: 可直接拖放或粘贴图片到此处，GitHub 会自动上传并生成链接；也可以填写已在仓库中的路径，例如 logs/20260330/new.jpg
+      placeholder: "拖放图片到此处上传，或填写已有图片路径"
     validations:
       required: false
 
