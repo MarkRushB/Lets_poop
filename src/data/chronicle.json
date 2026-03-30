@@ -274,7 +274,8 @@
         "八饼",
         "大墨"
       ],
-      "video": "logs/20240813/issue-23-video.mov"
+      "video": "logs/20240813/issue-23-video.mov",
+      "videoPoster": "logs/20240813/issue-23-video-poster.jpg"
     }
   ]
 }

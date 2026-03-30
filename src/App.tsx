@@ -159,6 +159,7 @@ const EventSection = React.memo(({ event, index, isMobile, onOpenDetail }: { eve
                   controls
                   className="w-full rounded-sm shadow-lg"
                   preload="metadata"
+                  poster={event.videoPoster ? `${import.meta.env.BASE_URL}${event.videoPoster}` : undefined}
                 >
                   <source src={`${import.meta.env.BASE_URL}${event.video}`} />
                 </video>
@@ -206,6 +207,7 @@ const EventSection = React.memo(({ event, index, isMobile, onOpenDetail }: { eve
                   controls
                   className="w-full rounded-sm shadow-lg"
                   preload="metadata"
+                  poster={event.videoPoster ? `${import.meta.env.BASE_URL}${event.videoPoster}` : undefined}
                 >
                   <source src={`${import.meta.env.BASE_URL}${event.video}`} />
                 </video>
@@ -660,6 +662,7 @@ export default function App() {
                         controls
                         className="w-full rounded-sm shadow-lg"
                         preload="metadata"
+                        poster={selectedEvent.videoPoster ? `${import.meta.env.BASE_URL}${selectedEvent.videoPoster}` : undefined}
                       >
                         <source src={`${import.meta.env.BASE_URL}${selectedEvent.video}`} />
                       </video>
