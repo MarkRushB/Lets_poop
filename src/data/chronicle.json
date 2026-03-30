@@ -9,7 +9,18 @@
       "title": "小狗全体失去重要功能纪念日",
       "description": "不会再爱了",
       "category": "milestone",
-      "dogNames": ["八饼", "巴布豆", "berry", "Bubble", "大墨", "Dora", "福宝", "悠米", "有米", "猪皮"]
+      "dogNames": [
+        "八饼",
+        "巴布豆",
+        "berry",
+        "Bubble",
+        "大墨",
+        "Dora",
+        "福宝",
+        "悠米",
+        "有米",
+        "猪皮"
+      ]
     },
     {
       "id": "2",
@@ -18,7 +29,18 @@
       "title": "马年大吉",
       "description": "全体小狗恭贺新春，马年睡大觉，拉大屎",
       "category": "milestone",
-      "dogNames": ["八饼", "巴布豆", "berry", "Bubble", "大墨", "Dora", "福宝", "悠米", "有米", "猪皮"]
+      "dogNames": [
+        "八饼",
+        "巴布豆",
+        "berry",
+        "Bubble",
+        "大墨",
+        "Dora",
+        "福宝",
+        "悠米",
+        "有米",
+        "猪皮"
+      ]
     },
     {
       "id": "3",
@@ -27,7 +49,10 @@
       "title": "平头边牧和棕色柯基",
       "description": "平头小帅哥，这是柯基吧？",
       "category": "milestone",
-      "dogNames": ["八饼", "大墨"]
+      "dogNames": [
+        "八饼",
+        "大墨"
+      ]
     },
     {
       "id": "4",
@@ -36,7 +61,9 @@
       "title": "魔丸？",
       "description": "稳重！",
       "category": "milestone",
-      "dogNames": ["大墨"]
+      "dogNames": [
+        "大墨"
+      ]
     },
     {
       "id": "5",
@@ -44,9 +71,20 @@
       "date": "Mar. 23",
       "title": "忌冷落小狗",
       "description": "全体做到",
-      "image":"logs/20260323/0323.jpg",
+      "image": "logs/20260323/0323.jpg",
       "category": "milestone",
-      "dogNames": ["八饼", "巴布豆", "berry", "Bubble", "大墨", "Dora", "福宝", "悠米", "有米", "猪皮"]
+      "dogNames": [
+        "八饼",
+        "巴布豆",
+        "berry",
+        "Bubble",
+        "大墨",
+        "Dora",
+        "福宝",
+        "悠米",
+        "有米",
+        "猪皮"
+      ]
     },
     {
       "id": "6",
@@ -54,10 +92,12 @@
       "date": "Jan. 28",
       "title": "大墨诞生",
       "description": "魔丸出世",
-      "image":"/logs/doggies/demo.png",
+      "image": "/logs/doggies/demo.png",
       "fixedImageSize": true,
       "category": "milestone",
-      "dogNames": ["大墨"]
+      "dogNames": [
+        "大墨"
+      ]
     },
     {
       "id": "7",
@@ -65,10 +105,12 @@
       "date": "Dec. 02",
       "title": "有米诞生",
       "description": "有米有钱",
-      "image":"/logs/doggies/yumi.png",
+      "image": "/logs/doggies/yumi.png",
       "fixedImageSize": true,
       "category": "milestone",
-      "dogNames": ["有米"]
+      "dogNames": [
+        "有米"
+      ]
     },
     {
       "id": "8",
@@ -76,10 +118,12 @@
       "date": "Feb. 07",
       "title": "猪皮诞生",
       "description": "丘比特",
-      "image":"/logs/doggies/jupyter.png",
+      "image": "/logs/doggies/jupyter.png",
       "fixedImageSize": true,
       "category": "milestone",
-      "dogNames": ["猪皮"]
+      "dogNames": [
+        "猪皮"
+      ]
     },
     {
       "id": "9",
@@ -87,10 +131,12 @@
       "date": "Dec. 15",
       "title": "巴布豆诞生",
       "description": "小豆萌芽",
-      "image":"/logs/doggies/bobdough.png",
+      "image": "/logs/doggies/bobdough.png",
       "fixedImageSize": true,
       "category": "milestone",
-      "dogNames": ["巴布豆"]
+      "dogNames": [
+        "巴布豆"
+      ]
     },
     {
       "id": "10",
@@ -98,10 +144,12 @@
       "date": "Jul. 16",
       "title": "悠米诞生",
       "description": "大嗓门喊着出生",
-      "image":"/logs/doggies/yuumi.png",
+      "image": "/logs/doggies/yuumi.png",
       "fixedImageSize": true,
       "category": "milestone",
-      "dogNames": ["悠米"]
+      "dogNames": [
+        "悠米"
+      ]
     },
     {
       "id": "11",
@@ -109,10 +157,12 @@
       "date": "Dec. 05",
       "title": "福宝诞生",
       "description": "刀疤降临",
-      "image":"/logs/doggies/furball.png",
+      "image": "/logs/doggies/furball.png",
       "fixedImageSize": true,
       "category": "milestone",
-      "dogNames": ["福宝"]
+      "dogNames": [
+        "福宝"
+      ]
     },
     {
       "id": "12",
@@ -120,10 +170,12 @@
       "date": "Jun. 22",
       "title": "Dora诞生",
       "description": "加多宝？",
-      "image":"/logs/doggies/dora.png",
+      "image": "/logs/doggies/dora.png",
       "fixedImageSize": true,
       "category": "milestone",
-      "dogNames": ["Dora"]
+      "dogNames": [
+        "Dora"
+      ]
     },
     {
       "id": "13",
@@ -131,10 +183,12 @@
       "date": "Apr. 30",
       "title": "八饼诞生",
       "description": "公主小妹",
-      "image":"/logs/doggies/bastet.png",
+      "image": "/logs/doggies/bastet.png",
       "fixedImageSize": true,
       "category": "milestone",
-      "dogNames": ["八饼"]
+      "dogNames": [
+        "八饼"
+      ]
     },
     {
       "id": "14",
@@ -142,10 +196,12 @@
       "date": "Jan. 24",
       "title": "Bubble诞生",
       "description": "爸爸原谅我的不告而来",
-      "image":"/logs/doggies/bubble.png",
+      "image": "/logs/doggies/bubble.png",
       "fixedImageSize": true,
       "category": "milestone",
-      "dogNames": ["Bubble"]
+      "dogNames": [
+        "Bubble"
+      ]
     },
     {
       "id": "15",
@@ -153,9 +209,11 @@
       "date": "Mar. 15",
       "title": "王博贪吃误入饭局 回首犬子空等夜归",
       "description": "Bubble，对不起（哭），爸爸不该不辞而别。爸爸晚上就爸爸出去吃饭了，晚上来接你好不好？",
-      "image":"/logs/20260329/bucierbie.jpg",
+      "image": "/logs/20260329/bucierbie.jpg",
       "category": "milestone",
-      "dogNames": ["Bubble"]
+      "dogNames": [
+        "Bubble"
+      ]
     },
     {
       "id": "16",
@@ -163,9 +221,11 @@
       "date": "Oct. 18",
       "title": "误入洋人理发店，出门已是尖猴脸",
       "description": "大家避雷：Brookline Grooming & Pet Supplies, 146 Harvard St, Brookline, MA, 02446, USA",
-      "image":"/logs/20251018/52595.JPEG",
+      "image": "/logs/20251018/52595.JPEG",
       "category": "milestone",
-      "dogNames": ["有米"]
+      "dogNames": [
+        "有米"
+      ]
     },
     {
       "id": "17",
@@ -173,9 +233,24 @@
       "date": "Jun. 09",
       "title": "Demo Go Swim!",
       "description": "父母在，不远游",
-      "image":"/logs/20250609/demoswim.jpg",
+      "image": "/logs/20250609/demoswim.jpg",
       "category": "milestone",
-      "dogNames": ["大墨"]
+      "dogNames": [
+        "大墨"
+      ]
+    },
+    {
+      "id": "18",
+      "year": "2025",
+      "date": "Sep. 21",
+      "title": "巴米冲突",
+      "description": "今日，小狗群突发“巴米冲突”。当事双方“巴子”与“有米”，因一根极具战略价值的牛JJ分配问题，当场反目，兄弟情谊宣告暂停。现场一度剑拔弩张，围观小狗纷纷撤离避险。分析认为，此次冲突属于典型“高价值资源引发外交破裂”。目前局势尚未缓和，牛JJ归属仍存争议。\n本台提醒：零食虽好，兄弟更贵。",
+      "category": "milestone",
+      "dogNames": [
+        "Bubble",
+        "有米"
+      ],
+      "image": "_No response_"
     }
   ]
 }
