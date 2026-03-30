@@ -58,6 +58,11 @@ jobs:
         id: cpr
         uses: peter-evans/create-pull-request@v6
         with:
+          # Use a PAT so GitHub Actions is allowed to create pull requests.
+          # Create a fine-grained PAT with "Contents", "Pull requests", and
+          # "Workflows" write permissions, then store it as the repository
+          # secret GH_PAT.
+          token: ${{ secrets.GH_PAT }}
           branch: automation/issue-${{ github.event.issue.number }}
           commit-message: "chore: add chronicle event from issue #${{ github.event.issue.number }}"
           title: "chore: 编年史投稿 #${{ github.event.issue.number }}"
@@ -65,6 +70,12 @@ jobs:
           labels: |
             automated-pr
             timeline-entry
+
+      - name: Auto-merge pull request
+        if: steps.cpr.outputs.pull-request-number != ''
+        run: gh pr merge --auto --merge "${{ steps.cpr.outputs.pull-request-number }}"
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
 
       - name: Comment PR link on issue
         if: steps.cpr.outputs.pull-request-url != ''
@@ -77,5 +88,5 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: issueNumber,
-              body: `已自动生成/更新 PR：${prUrl}\n\n管理员审核合并后，网页会自动更新。`
+              body: `已自动生成/更新 PR：${prUrl}\n\nPR 将自动合并，合并后网页会自动更新。`
             });
