@@ -241,19 +241,6 @@
     },
     {
       "id": "18",
-      "year": "2024",
-      "date": "Aug. 13",
-      "title": "爱在日落黄昏时",
-      "description": "年少的达摩不懂爱，懵懂的八饼不会爱",
-      "category": "milestone",
-      "dogNames": [
-        "八饼",
-        "大墨"
-      ],
-      "image": "logs/20240813/issue-14.jpg"
-    },
-    {
-      "id": "19",
       "year": "2025",
       "date": "Sep. 21",
       "title": "巴米冲突",
@@ -265,7 +252,7 @@
       ]
     },
     {
-      "id": "20",
+      "id": "19",
       "year": "2025",
       "date": "Nov. 05",
       "title": "黑色大xx",
@@ -277,10 +264,10 @@
       "image": "logs/20251105/issue-19.jpg"
     },
     {
-      "id": "21",
+      "id": "20",
       "year": "2024",
       "date": "Aug. 13",
-      "title": "饼墨初见",
+      "title": "爱在日落黄昏时",
       "description": "年少的达摩不懂爱，懵懂的八饼不会爱",
       "category": "milestone",
       "dogNames": [
