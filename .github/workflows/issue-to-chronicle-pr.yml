@@ -1,0 +1,53 @@
+name: Issue 投稿自动生成 PR
+
+on:
+  issues:
+    types: [opened, edited, reopened]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  issue-to-pr:
+    if: contains(github.event.issue.labels.*.name, 'timeline-entry')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Convert issue to chronicle event
+        run: node .github/scripts/issue-to-chronicle.mjs
+
+      - name: Create or update pull request
+        id: cpr
+        uses: peter-evans/create-pull-request@v6
+        with:
+          branch: automation/issue-${{ github.event.issue.number }}
+          commit-message: "chore: add chronicle event from issue #${{ github.event.issue.number }}"
+          title: "chore: 编年史投稿 #${{ github.event.issue.number }}"
+          body-path: issue-summary.md
+          labels: |
+            automated-pr
+            timeline-entry
+
+      - name: Comment PR link on issue
+        if: steps.cpr.outputs.pull-request-url != ''
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prUrl = '${{ steps.cpr.outputs.pull-request-url }}';
+            const issueNumber = context.payload.issue.number;
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+              body: `已自动生成/更新 PR：${prUrl}\n\n管理员审核合并后，网页会自动更新。`
+            });
