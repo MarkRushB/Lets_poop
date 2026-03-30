@@ -28,6 +28,7 @@ const isoDate = getField('事件日期');
 const title = getField('事件标题');
 const description = getField('事件描述');
 const dogNamesRaw = getField('相关小狗');
+const categoryRaw = getField('事件类型');
 const imagePath = getField('图片路径（可选）');
 
 if (!/^\d{4}-\d{2}-\d{2}$/.test(isoDate)) {
@@ -51,6 +52,16 @@ if (dogNames.length === 0) {
   throw new Error('请至少填写一个相关小狗名字');
 }
 
+const validCategories = ['milestone', 'funny', 'meeting', 'legend'];
+// The dropdown value looks like "milestone（里程碑）" – extract the leading word before "（"
+const category = categoryRaw.split('（')[0].trim();
+if (!category) {
+  throw new Error('事件类型不能为空');
+}
+if (!validCategories.includes(category)) {
+  throw new Error(`无效的事件类型：${category}。支持的类型：${validCategories.join(', ')}`);
+}
+
 const [year, month, day] = isoDate.split('-');
 const monthNames = ['Jan.', 'Feb.', 'Mar.', 'Apr.', 'May', 'Jun.', 'Jul.', 'Aug.', 'Sep.', 'Oct.', 'Nov.', 'Dec.'];
 const displayDate = `${monthNames[Number(month) - 1]} ${day}`;
@@ -69,7 +80,7 @@ const newEvent = {
   date: displayDate,
   title,
   description,
-  category: 'milestone',
+  category,
   dogNames
 };
 
@@ -84,8 +95,10 @@ const summaryPath = path.join(root, 'issue-summary.md');
 const summary = [
   `来自 #${issue.number} 的自动投稿：`,
   '',
+  `- 自动分配 ID：${newEvent.id}`,
   `- 日期：${isoDate}`,
   `- 标题：${title}`,
+  `- 类型：${category}`,
   `- 小狗：${dogNames.join('、')}`,
   imagePath ? `- 图片：${imagePath}` : '- 图片：无'
 ].join('\n');

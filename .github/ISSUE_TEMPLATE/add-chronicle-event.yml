@@ -37,6 +37,19 @@ body:
     validations:
       required: true
 
+  - type: dropdown
+    id: event_category
+    attributes:
+      label: 事件类型
+      description: 选择最符合的事件类型
+      options:
+        - milestone（里程碑）
+        - funny（搞笑）
+        - meeting（相聚）
+        - legend（传说）
+    validations:
+      required: true
+
   - type: input
     id: image_path
     attributes:
