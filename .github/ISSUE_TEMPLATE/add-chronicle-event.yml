@@ -1,0 +1,54 @@
+name: 新增编年史事件
+description: 用表单提交一条新的小狗群编年史事件
+title: "[编年史] "
+labels:
+  - timeline-entry
+body:
+  - type: input
+    id: event_date
+    attributes:
+      label: 事件日期
+      description: 请使用 YYYY-MM-DD 格式，例如 2026-03-30
+      placeholder: 2026-03-30
+    validations:
+      required: true
+
+  - type: input
+    id: event_title
+    attributes:
+      label: 事件标题
+      placeholder: 今天谁又整活了？
+    validations:
+      required: true
+
+  - type: textarea
+    id: event_description
+    attributes:
+      label: 事件描述
+      description: 简单描述发生了什么
+      placeholder: 可以写一两句话
+    validations:
+      required: true
+
+  - type: textarea
+    id: dog_names
+    attributes:
+      label: 相关小狗
+      description: 填名字，用逗号或换行分隔（例如：Bubble, 大墨）
+      placeholder: Bubble, 大墨
+    validations:
+      required: true
+
+  - type: input
+    id: image_path
+    attributes:
+      label: 图片路径（可选）
+      description: 已经在仓库 public 下的路径，例如 /logs/20260330/new.jpg
+      placeholder: /logs/20260330/new.jpg
+    validations:
+      required: false
+
+  - type: markdown
+    attributes:
+      value: |
+        提交后会自动生成一个 PR，管理员审核合并后网站会自动更新。
