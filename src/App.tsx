@@ -221,11 +221,11 @@ const EventSection = React.memo(({ event, index, isMobile, onOpenDetail }: { eve
         {!isMobile ? (
           <div className="flex-1 flex flex-col justify-start pt-16 px-12 gap-4">
             {event.video && (
-              <div className="shrink-0 overflow-hidden" style={FIXED_IMAGE_FRAME_STYLE}>
+              <div className="w-full max-w-[320px]">
                 <VideoPlayer
                   src={`${import.meta.env.BASE_URL}${event.video}`}
                   poster={event.videoPoster ? `${import.meta.env.BASE_URL}${event.videoPoster}` : undefined}
-                  className="w-full h-full object-contain rounded-sm shadow-lg"
+                  className="w-full h-auto rounded-sm shadow-lg"
                 />
               </div>
             )}
