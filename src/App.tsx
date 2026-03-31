@@ -219,7 +219,7 @@ const EventSection = React.memo(({ event, index, isMobile, onOpenDetail }: { eve
 
         {/* Bottom Half: Image/Video/Audio Content (Desktop) */}
         {!isMobile ? (
-          <div className="flex-1 flex flex-col justify-start pt-8 px-12 gap-4">
+          <div className="flex-1 flex flex-col justify-start pt-16 px-12 gap-4">
             {event.video && (
               <div className="w-full max-w-[320px]">
                 <VideoPlayer
