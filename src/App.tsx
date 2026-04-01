@@ -5,7 +5,7 @@
 
 import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { motion, useScroll, useTransform, AnimatePresence } from 'motion/react';
-import { PawPrint, ArrowRight, ArrowDown, Search, X, Filter } from 'lucide-react';
+import { PawPrint, ArrowRight, ArrowDown, Search, X, Filter, ArrowUpDown } from 'lucide-react';
 import { cn } from './lib/utils';
 import { CHRONICLE_EVENTS, CHRONICLE_TITLE, CHRONICLE_SUBTITLE } from './constants';
 
@@ -115,6 +115,153 @@ const VideoPlayer = React.memo(({ src, poster, className }: { src: string; poste
   );
 });
 
+// ── Mini Calendar ──────────────────────────────────────────────────────────────
+const WEEKDAY_LABELS = ['日', '一', '二', '三', '四', '五', '六'];
+const MONTH_NAMES_ZH = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+
+const MiniCalendar = React.memo(({
+  eventDateSet,
+  selectedDateKey,
+  onSelectDate,
+}: {
+  eventDateSet: Set<string>;
+  selectedDateKey: string | null;
+  onSelectDate: (key: string | null) => void;
+}) => {
+  const now = new Date();
+  const [viewYear, setViewYear] = useState(now.getFullYear());
+  const [viewMonth, setViewMonth] = useState(now.getMonth());
+  const [pickerMode, setPickerMode] = useState<'calendar' | 'month' | 'year'>('calendar');
+
+  const allYearsInData = useMemo(() => {
+    const ys = new Set<number>();
+    eventDateSet.forEach(key => ys.add(parseInt(key.split('-')[0])));
+    ys.add(now.getFullYear());
+    return Array.from(ys).sort((a, b) => a - b);
+  }, [eventDateSet]);
+
+  const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+  const startWeekday = new Date(viewYear, viewMonth, 1).getDay();
+
+  const prevMonth = () => {
+    if (viewMonth === 0) { setViewMonth(11); setViewYear(y => y - 1); }
+    else setViewMonth(m => m - 1);
+  };
+  const nextMonth = () => {
+    if (viewMonth === 11) { setViewMonth(0); setViewYear(y => y + 1); }
+    else setViewMonth(m => m + 1);
+  };
+
+  const cells: (number | null)[] = [
+    ...Array(startWeekday).fill(null),
+    ...Array.from({ length: daysInMonth }, (_, i) => i + 1),
+  ];
+  while (cells.length % 7 !== 0) cells.push(null);
+
+  return (
+    <div className="space-y-2">
+      {/* Header: year + month buttons + prev/next arrows */}
+      <div className="flex items-center justify-between">
+        {pickerMode === 'calendar' ? (
+          <button onClick={prevMonth} className="w-6 h-6 flex items-center justify-center text-fg/40 hover:text-accent transition-colors text-base leading-none">‹</button>
+        ) : <div className="w-6" />}
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => setPickerMode(m => m === 'year' ? 'calendar' : 'year')}
+            className={cn('text-[10px] font-bold tracking-wider transition-colors px-1 py-0.5 rounded', pickerMode === 'year' ? 'bg-accent/20 text-accent' : 'text-fg/50 hover:text-accent')}
+          >
+            {viewYear}年
+          </button>
+          <button
+            onClick={() => setPickerMode(m => m === 'month' ? 'calendar' : 'month')}
+            className={cn('text-[10px] font-bold tracking-wider transition-colors px-1 py-0.5 rounded', pickerMode === 'month' ? 'bg-accent/20 text-accent' : 'text-fg/50 hover:text-accent')}
+          >
+            {MONTH_NAMES_ZH[viewMonth]}
+          </button>
+        </div>
+        {pickerMode === 'calendar' ? (
+          <button onClick={nextMonth} className="w-6 h-6 flex items-center justify-center text-fg/40 hover:text-accent transition-colors text-base leading-none">›</button>
+        ) : <div className="w-6" />}
+      </div>
+
+      {/* Year picker */}
+      {pickerMode === 'year' && (
+        <div className="grid grid-cols-3 gap-1">
+          {allYearsInData.map(y => (
+            <button
+              key={y}
+              onClick={() => { setViewYear(y); setPickerMode('calendar'); }}
+              className={cn(
+                'py-1.5 rounded text-[10px] font-bold transition-all',
+                y === viewYear ? 'bg-accent text-bg' : 'text-fg/50 hover:bg-accent/20 hover:text-accent'
+              )}
+            >
+              {y}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Month picker */}
+      {pickerMode === 'month' && (
+        <div className="grid grid-cols-4 gap-1">
+          {MONTH_NAMES_ZH.map((m, i) => (
+            <button
+              key={m}
+              onClick={() => { setViewMonth(i); setPickerMode('calendar'); }}
+              className={cn(
+                'py-1.5 rounded text-[10px] font-bold transition-all',
+                i === viewMonth ? 'bg-accent text-bg' : 'text-fg/50 hover:bg-accent/20 hover:text-accent'
+              )}
+            >
+              {m}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Calendar grid */}
+      {pickerMode === 'calendar' && (
+        <div className="grid grid-cols-7 gap-px">
+          {WEEKDAY_LABELS.map(d => (
+            <div key={d} className="text-center text-[8px] font-bold text-fg/20 py-1">{d}</div>
+          ))}
+          {cells.map((day, i) => {
+            if (!day) return <div key={i} className="aspect-square" />;
+            const key = `${viewYear}-${String(viewMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            const hasEvent = eventDateSet.has(key);
+            const isSelected = selectedDateKey === key;
+            const isToday = now.getFullYear() === viewYear && now.getMonth() === viewMonth && now.getDate() === day;
+            return (
+              <button
+                key={i}
+                onClick={() => hasEvent && onSelectDate(isSelected ? null : key)}
+                disabled={!hasEvent}
+                title={hasEvent ? `跳转到 ${key}` : undefined}
+                className={cn(
+                  'relative flex items-center justify-center aspect-square rounded text-[9px] font-bold transition-all',
+                  isSelected ? 'bg-accent text-bg'
+                    : hasEvent ? 'text-accent hover:bg-accent/20'
+                    : 'text-fg/20',
+                  isToday && !isSelected ? 'ring-1 ring-accent/50' : '',
+                  hasEvent ? 'cursor-pointer' : 'cursor-default',
+                )}
+              >
+                {day}
+                {hasEvent && !isSelected && (
+                  <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-0.5 h-0.5 rounded-full bg-accent/70" />
+                )}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+});
+MiniCalendar.displayName = 'MiniCalendar';
+// ──────────────────────────────────────────────────────────────────────────────
+
 const EventSection = React.memo(({ event, index, isMobile, onOpenDetail }: { event: any; index: number; isMobile: boolean; onOpenDetail: (e: any) => void }) => {
   const useFixedImageSize = Boolean(event.image) && Boolean(event.fixedImageSize);
   const shouldShowReadMore = event.description.length > DESCRIPTION_PREVIEW_MAX;
@@ -219,20 +366,20 @@ const EventSection = React.memo(({ event, index, isMobile, onOpenDetail }: { eve
 
         {/* Bottom Half: Image/Video/Audio Content (Desktop) */}
         {!isMobile ? (
-          <div className="flex-1 flex flex-col justify-start pt-16 px-12 gap-4 overflow-hidden min-h-0">
+          <div className="flex-1 flex flex-col items-center justify-start pt-16 px-12 gap-4 overflow-hidden min-h-0">
             {event.video && (
-              <div className="w-full max-w-[320px]">
+              <div className="flex-1 min-h-0 max-w-[320px]">
                 <VideoPlayer
                   src={`${import.meta.env.BASE_URL}${event.video}`}
                   poster={event.videoPoster ? `${import.meta.env.BASE_URL}${event.videoPoster}` : undefined}
-                  className="w-full h-auto rounded-sm shadow-lg"
+                  className="h-full w-auto max-w-full rounded-sm shadow-lg"
                 />
               </div>
             )}
             {event.image && (
               <div className={cn(
                 "relative group",
-                useFixedImageSize ? "mx-auto shrink-0" : "w-full max-w-[320px]"
+                useFixedImageSize ? "mx-auto shrink-0" : "max-w-[320px]"
               )}
               style={useFixedImageSize ? FIXED_IMAGE_FRAME_STYLE : undefined}>
                 <motion.img 
@@ -263,7 +410,7 @@ const EventSection = React.memo(({ event, index, isMobile, onOpenDetail }: { eve
             )}
           </div>
         ) : (
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col items-center gap-4">
             {event.video && (
               <div className="w-full max-w-[320px]">
                 <VideoPlayer
@@ -276,7 +423,7 @@ const EventSection = React.memo(({ event, index, isMobile, onOpenDetail }: { eve
             {event.image && (
               <div className={cn(
                 "relative group",
-                useFixedImageSize ? "mx-auto shrink-0" : "w-full max-w-[320px]"
+                useFixedImageSize ? "mx-auto shrink-0" : "max-w-[320px]"
               )}
               style={useFixedImageSize ? FIXED_IMAGE_FRAME_STYLE : undefined}>
                 <motion.img 
@@ -319,6 +466,8 @@ export default function App() {
   const [isMobile, setIsMobile] = useState(false);
   const [activeYear, setActiveYear] = useState<string | null>(null);
   const [selectedDog, setSelectedDog] = useState<string | null>(null);
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [selectedDateKey, setSelectedDateKey] = useState<string | null>(null);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<any | null>(null);
 
@@ -340,20 +489,45 @@ export default function App() {
     return Array.from(dogs).sort();
   }, [CHRONICLE_EVENTS]);
 
+  const eventDateSet = useMemo(() => {
+    const s = new Set<string>();
+    CHRONICLE_EVENTS.forEach(event => {
+      const ts = toEventTimestamp(event);
+      if (ts === Number.MAX_SAFE_INTEGER) return;
+      const d = new Date(ts);
+      s.add(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`);
+    });
+    return s;
+  }, [CHRONICLE_EVENTS]);
+
+  const eventDateMap = useMemo(() => {
+    const map = new Map<string, (typeof CHRONICLE_EVENTS)[number][]>();
+    CHRONICLE_EVENTS.forEach(event => {
+      const ts = toEventTimestamp(event);
+      if (ts === Number.MAX_SAFE_INTEGER) return;
+      const d = new Date(ts);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      if (!map.has(key)) map.set(key, []);
+      map.get(key)!.push(event);
+    });
+    return map;
+  }, [CHRONICLE_EVENTS]);
+
   const filteredEvents = useMemo(() => {
     const events = selectedDog
       ? CHRONICLE_EVENTS.filter(e => e.dogNames?.includes(selectedDog))
       : CHRONICLE_EVENTS;
 
+    const dir = sortOrder === 'asc' ? 1 : -1;
     return events
       .map((event, index) => ({ event, index }))
       .sort((a, b) => {
         const timeDiff = toEventTimestamp(a.event) - toEventTimestamp(b.event);
-        if (timeDiff !== 0) return timeDiff;
-        return a.index - b.index;
+        if (timeDiff !== 0) return timeDiff * dir;
+        return (a.index - b.index) * dir;
       })
       .map(item => item.event);
-  }, [selectedDog, CHRONICLE_EVENTS]);
+  }, [selectedDog, sortOrder, CHRONICLE_EVENTS]);
 
   // Scroll to first item when filter changes
   useEffect(() => {
@@ -369,13 +543,16 @@ export default function App() {
   }, [selectedDog, filteredEvents.length]);
 
   const eventsByYear = useMemo(() => {
+    const source = selectedDateKey
+      ? (eventDateMap.get(selectedDateKey) ?? [])
+      : filteredEvents;
     const grouped: Record<string, typeof CHRONICLE_EVENTS> = {};
-    filteredEvents.forEach(event => {
+    source.forEach(event => {
       if (!grouped[event.year]) grouped[event.year] = [];
       grouped[event.year].push(event);
     });
     return grouped;
-  }, [filteredEvents]);
+  }, [filteredEvents, selectedDateKey, eventDateMap]);
 
   const { scrollYProgress } = useScroll({
     target: targetRef,
@@ -424,6 +601,15 @@ export default function App() {
     }
   };
 
+  const handleSelectDate = (key: string | null) => {
+    setSelectedDateKey(key);
+    if (!key) return;
+    const events = eventDateMap.get(key);
+    if (events && events.length > 0) {
+      setTimeout(() => scrollToEvent(events[0].id), 50);
+    }
+  };
+
   return (
     <main 
       ref={targetRef} 
@@ -452,7 +638,8 @@ export default function App() {
                 initial={{ opacity: 0, y: 20, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 20, scale: 0.95 }}
-                className="bg-paper border border-muted/30 p-6 rounded-3xl shadow-2xl w-80 max-h-[80vh] overflow-y-auto hide-scrollbar"
+                className="bg-paper border border-muted/30 p-6 rounded-3xl shadow-2xl w-80 max-h-[80vh] overflow-y-scroll hide-scrollbar"
+                style={{ scrollbarGutter: 'stable' }}
               >
                 <div className="space-y-8">
                   <div className="flex justify-between items-center border-b border-muted/30 pb-4">
@@ -460,11 +647,39 @@ export default function App() {
                     <button 
                       onClick={() => {
                         setSelectedDog(null);
+                        setSortOrder('asc');
+                        setSelectedDateKey(null);
                       }}
                       className="text-[10px] font-bold text-accent hover:underline"
                     >
                       重置
                     </button>
+                  </div>
+
+                  {/* Date Calendar */}
+                  {/* Sort Order Toggle */}
+                  <div className="space-y-3">
+                    <span className="text-[9px] font-bold tracking-widest uppercase text-fg/30">时间轴顺序</span>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setSortOrder('asc')}
+                        className={cn(
+                          "flex-1 px-3 py-1.5 rounded-full text-[10px] font-bold transition-all",
+                          sortOrder === 'asc' ? "bg-accent text-bg" : "bg-muted/30 text-fg/40 hover:bg-muted/50"
+                        )}
+                      >
+                        正序 ↑
+                      </button>
+                      <button
+                        onClick={() => setSortOrder('desc')}
+                        className={cn(
+                          "flex-1 px-3 py-1.5 rounded-full text-[10px] font-bold transition-all",
+                          sortOrder === 'desc' ? "bg-accent text-bg" : "bg-muted/30 text-fg/40 hover:bg-muted/50"
+                        )}
+                      >
+                        倒序 ↓
+                      </button>
+                    </div>
                   </div>
 
                   {/* Dog Filter Tags */}
@@ -496,9 +711,33 @@ export default function App() {
                   </div>
 
                   {/* Year/Event Index */}
+                  {/* Date Calendar */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between min-w-0">
+                      <span className="text-[9px] font-bold tracking-widest uppercase text-fg/30">按日期跳转</span>
+                      <div className="w-[110px] text-right shrink-0">
+                        {selectedDateKey && (
+                          <button
+                            onClick={() => setSelectedDateKey(null)}
+                            className="w-full text-[9px] text-accent hover:underline truncate whitespace-nowrap"
+                            title={`${selectedDateKey} ×`}
+                          >
+                            {selectedDateKey} ×
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                    <MiniCalendar
+                      eventDateSet={eventDateSet}
+                      selectedDateKey={selectedDateKey}
+                      onSelectDate={handleSelectDate}
+                    />
+                  </div>
+
+                  {/* Year/Event Index (filtered by date when selected) */}
                   <div className="space-y-6">
                     <span className="text-[9px] font-bold tracking-widest uppercase text-fg/30">快速跳转</span>
-                    {Object.keys(eventsByYear).sort().map(year => (
+                    {Object.keys(eventsByYear).sort((a, b) => sortOrder === 'asc' ? parseInt(a) - parseInt(b) : parseInt(b) - parseInt(a)).map(year => (
                       <div key={year} className="space-y-3">
                         <h4 className="font-display text-xl font-black text-fg/20 border-l-2 border-accent/20 pl-3">
                           {year}
