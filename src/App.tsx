@@ -7,7 +7,7 @@ import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { motion, useScroll, useTransform, AnimatePresence } from 'motion/react';
 import { PawPrint, ArrowRight, ArrowDown, Search, X, Filter, ArrowUpDown } from 'lucide-react';
 import { cn } from './lib/utils';
-import { CHRONICLE_EVENTS, CHRONICLE_TITLE, CHRONICLE_SUBTITLE } from './constants';
+import { CHRONICLE_EVENTS, CHRONICLE_TITLE, CHRONICLE_SUBTITLE, type ChronicleEvent } from './constants';
 
 const MONTH_INDEX: Record<string, number> = {
   jan: 0,
@@ -262,7 +262,7 @@ const MiniCalendar = React.memo(({
 MiniCalendar.displayName = 'MiniCalendar';
 // ──────────────────────────────────────────────────────────────────────────────
 
-const EventSection = React.memo(({ event, index, isMobile, onOpenDetail }: { event: any; index: number; isMobile: boolean; onOpenDetail: (e: any) => void }) => {
+const EventSection = React.memo(({ event, index, isMobile, onOpenDetail }: { event: ChronicleEvent; index: number; isMobile: boolean; onOpenDetail: (event: ChronicleEvent) => void }) => {
   const useFixedImageSize = Boolean(event.image) && Boolean(event.fixedImageSize);
   const shouldShowReadMore = event.description.length > DESCRIPTION_PREVIEW_MAX;
 
@@ -463,13 +463,32 @@ EventSection.displayName = 'EventSection';
 
 export default function App() {
   const targetRef = useRef<HTMLDivElement>(null);
+  const detailCloseButtonRef = useRef<HTMLButtonElement>(null);
   const [isMobile, setIsMobile] = useState(false);
   const [activeYear, setActiveYear] = useState<string | null>(null);
   const [selectedDog, setSelectedDog] = useState<string | null>(null);
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [selectedDateKey, setSelectedDateKey] = useState<string | null>(null);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [selectedEvent, setSelectedEvent] = useState<any | null>(null);
+  const [selectedEvent, setSelectedEvent] = useState<ChronicleEvent | null>(null);
+
+  useEffect(() => {
+    if (!selectedEvent) return;
+
+    const previousOverflow = document.body.style.overflow;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setSelectedEvent(null);
+    };
+
+    document.body.style.overflow = 'hidden';
+    document.addEventListener('keydown', closeOnEscape);
+    detailCloseButtonRef.current?.focus();
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener('keydown', closeOnEscape);
+    };
+  }, [selectedEvent]);
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -627,6 +646,9 @@ export default function App() {
         <div className="fixed top-6 right-6 z-[60] flex flex-col items-end gap-2">
           <button 
             onClick={() => setIsFilterOpen(!isFilterOpen)}
+            aria-label={isFilterOpen ? '关闭筛选面板' : '打开筛选面板'}
+            aria-expanded={isFilterOpen}
+            aria-controls="chronicle-filters"
             className="w-12 h-12 rounded-full bg-accent text-bg flex items-center justify-center shadow-lg hover:scale-110 transition-transform"
           >
             {isFilterOpen ? <X size={20} /> : <Search size={20} />}
@@ -635,6 +657,7 @@ export default function App() {
           <AnimatePresence>
             {isFilterOpen && (
               <motion.div 
+                id="chronicle-filters"
                 initial={{ opacity: 0, y: 20, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 20, scale: 0.95 }}
@@ -885,6 +908,7 @@ export default function App() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setSelectedEvent(null)}
+              aria-hidden="true"
               className="absolute inset-0 bg-bg/60 backdrop-blur-md"
             />
             <motion.div 
@@ -892,10 +916,15 @@ export default function App() {
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="event-detail-title"
               className="relative w-full max-w-2xl bg-bg h-full shadow-2xl overflow-y-auto border-l border-muted/30"
             >
               <button 
+                ref={detailCloseButtonRef}
                 onClick={() => setSelectedEvent(null)}
+                aria-label="关闭事件详情"
                 className="absolute top-8 right-8 p-2 hover:bg-muted/20 rounded-full transition-colors z-10"
               >
                 <X size={24} />
@@ -915,7 +944,7 @@ export default function App() {
                 </div>
 
                 <div className="space-y-8">
-                  <h2 className="font-serif text-4xl md:text-6xl font-black text-fg leading-tight">
+                  <h2 id="event-detail-title" className="font-serif text-4xl md:text-6xl font-black text-fg leading-tight">
                     {selectedEvent.title || "编年史记事"}
                   </h2>
                   
