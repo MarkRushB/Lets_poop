@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react';
 import { Check, LoaderCircle, PawPrint, Upload, X } from 'lucide-react';
 import {
   chronicleApiEnabled,
@@ -14,6 +14,20 @@ import {
 
 type Props = { open: boolean; dogNames: string[]; onClose: () => void };
 
+function useObjectUrl(file: File | null) {
+  const [objectUrl, setObjectUrl] = useState('');
+  useEffect(() => {
+    if (!file) {
+      setObjectUrl('');
+      return;
+    }
+    const nextUrl = URL.createObjectURL(file);
+    setObjectUrl(nextUrl);
+    return () => URL.revokeObjectURL(nextUrl);
+  }, [file]);
+  return objectUrl;
+}
+
 export default function SubmissionDialog({ open, dogNames, onClose }: Props) {
   const [parent, setParent] = useState<string | null>(() => getRememberedParent());
   const [nickname, setNickname] = useState('');
@@ -25,6 +39,12 @@ export default function SubmissionDialog({ open, dogNames, onClose }: Props) {
   const [profile, setProfile] = useState<ParentProfile | null>(null);
   const [mode, setMode] = useState<'submit' | 'review'>('submit');
   const [pending, setPending] = useState<PendingEntry[]>([]);
+  const [image, setImage] = useState<File | null>(null);
+  const [video, setVideo] = useState<File | null>(null);
+  const [audio, setAudio] = useState<File | null>(null);
+  const imagePreview = useObjectUrl(image);
+  const videoPreview = useObjectUrl(video);
+  const audioPreview = useObjectUrl(audio);
 
   useEffect(() => {
     if (!open) return;
@@ -73,9 +93,9 @@ export default function SubmissionDialog({ open, dogNames, onClose }: Props) {
         description: String(form.get('description')),
         category: String(form.get('category')) as 'milestone' | 'funny' | 'meeting' | 'legend',
         dogNames: selectedDogs,
-        image: (form.get('image') as File)?.size ? form.get('image') as File : undefined,
-        video: (form.get('video') as File)?.size ? form.get('video') as File : undefined,
-        audio: (form.get('audio') as File)?.size ? form.get('audio') as File : undefined,
+        image: image ?? undefined,
+        video: video ?? undefined,
+        audio: audio ?? undefined,
       });
       setSent(true);
     } catch (reason) { setError(reason instanceof Error ? reason.message : '投稿失败'); }
@@ -92,12 +112,21 @@ export default function SubmissionDialog({ open, dogNames, onClose }: Props) {
   };
 
   const field = 'w-full rounded-2xl border border-muted bg-white/70 px-4 py-3 text-sm outline-none focus:border-accent';
+  const media = [
+    { kind: 'image' as const, label: '照片', accept: 'image/*', file: image, url: imagePreview, setFile: setImage },
+    { kind: 'video' as const, label: '视频', accept: 'video/*', file: video, url: videoPreview, setFile: setVideo },
+    { kind: 'audio' as const, label: '语音', accept: 'audio/*', file: audio, url: audioPreview, setFile: setAudio },
+  ];
+
+  const selectMedia = (event: ChangeEvent<HTMLInputElement>, setFile: (file: File | null) => void) => {
+    setFile(event.target.files?.[0] ?? null);
+  };
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-end justify-center bg-fg/25 p-0 backdrop-blur-sm md:items-center md:p-6" role="dialog" aria-modal="true" aria-label="记录一件狗事">
-      <div className="relative max-h-[94vh] w-full max-w-2xl overflow-y-auto rounded-t-[2rem] bg-bg p-7 shadow-2xl md:rounded-[2rem] md:p-10">
-        <button onClick={onClose} className="absolute right-6 top-6 rounded-full p-2 hover:bg-muted/40" aria-label="关闭"><X size={20}/></button>
-        <div className="mb-8 flex items-center gap-3"><PawPrint className="text-accent"/><div><p className="text-[10px] font-bold uppercase tracking-[.3em] text-fg/40">Dog Chronicle</p><h2 className="font-serif text-3xl font-black">{mode === 'review' ? '审核狗狗新闻' : '记录一件狗事'}</h2></div></div>
+    <div className="fixed inset-0 z-[200] flex items-end justify-center bg-fg/25 p-0 backdrop-blur-sm sm:items-center sm:p-6" role="dialog" aria-modal="true" aria-label="记录一件狗事">
+      <div className="relative h-[100dvh] max-h-[100dvh] w-full max-w-2xl overflow-y-auto overscroll-contain bg-bg px-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] pt-[calc(1.25rem+env(safe-area-inset-top))] shadow-2xl sm:h-auto sm:max-h-[94vh] sm:rounded-[2rem] sm:p-8 md:p-10">
+        <button onClick={onClose} className="absolute right-3 top-[calc(.75rem+env(safe-area-inset-top))] rounded-full p-2.5 hover:bg-muted/40 sm:right-6 sm:top-6" aria-label="关闭"><X size={20}/></button>
+        <div className="mb-6 flex items-center gap-3 pr-10 sm:mb-8"><PawPrint className="shrink-0 text-accent"/><div><p className="text-[10px] font-bold uppercase tracking-[.3em] text-fg/40">Dog Chronicle</p><h2 className="font-serif text-2xl font-black sm:text-3xl">{mode === 'review' ? '审核狗狗新闻' : '记录一件狗事'}</h2></div></div>
 
         {profile?.is_admin && parent && !sent && (
           <div className="mb-7 flex rounded-full bg-muted/35 p-1 text-xs font-bold">
@@ -134,16 +163,24 @@ export default function SubmissionDialog({ open, dogNames, onClose }: Props) {
             <button disabled={busy} className="flex w-full items-center justify-center gap-2 rounded-full bg-accent py-3.5 text-sm font-bold text-bg disabled:opacity-50">{busy && <LoaderCircle className="animate-spin" size={16}/>}验证家长身份</button>
           </form>
         ) : (
-          <form onSubmit={submit} className="space-y-5">
+          <form onSubmit={submit} className="space-y-4 sm:space-y-5">
             <p className="text-xs text-fg/45">投稿人：{parent}</p>
             <label className="block text-xs font-bold">发生日期<input name="eventDate" type="date" className={`${field} mt-2`} required /></label>
             <label className="block text-xs font-bold">标题<input name="title" className={`${field} mt-2`} maxLength={80} placeholder="今天谁又整活了？" required /></label>
-            <label className="block text-xs font-bold">故事<textarea name="description" className={`${field} mt-2 min-h-28 resize-y`} maxLength={2000} placeholder="发生了什么？" required /></label>
+            <label className="block text-xs font-bold">故事<textarea name="description" className={`${field} mt-2 min-h-24 resize-y sm:min-h-28`} maxLength={2000} placeholder="发生了什么？" required /></label>
             <fieldset><legend className="mb-2 text-xs font-bold">相关小狗</legend><div className="flex flex-wrap gap-2">{dogNames.map(dog => <button type="button" key={dog} onClick={() => setSelectedDogs(value => value.includes(dog) ? value.filter(item => item !== dog) : [...value, dog])} className={`rounded-full px-3 py-1.5 text-xs font-bold ${selectedDogs.includes(dog) ? 'bg-accent text-bg' : 'bg-muted/45 text-fg/60'}`}>{dog}</button>)}</div>{selectedDogs.length === 0 && <p className="mt-2 text-[11px] text-fg/40">请至少选择一只小狗</p>}</fieldset>
             <label className="block text-xs font-bold">类型<select name="category" className={`${field} mt-2`}><option value="funny">搞笑</option><option value="milestone">里程碑</option><option value="meeting">相聚</option><option value="legend">传说</option></select></label>
-            <div className="grid gap-3 md:grid-cols-3">{([['image','照片','image/*'],['video','视频','video/*'],['audio','语音','audio/*']] as const).map(([name,label,accept]) => <label key={name} className="flex cursor-pointer items-center gap-2 rounded-2xl border border-dashed border-muted px-4 py-3 text-xs font-bold hover:border-accent"><Upload size={15}/>{label}<input name={name} type="file" accept={accept} className="sr-only"/></label>)}</div>
+            <div className="grid grid-cols-3 gap-2 sm:gap-3">{media.map(({ kind, label, accept, file, setFile }) => <label key={kind} className={`flex min-w-0 cursor-pointer items-center justify-center gap-1.5 rounded-2xl border border-dashed px-2 py-3 text-xs font-bold transition-colors sm:px-4 ${file ? 'border-accent bg-accent/5 text-accent' : 'border-muted hover:border-accent'}`}><Upload size={15}/><span className="truncate">{file ? file.name : label}</span><input type="file" accept={accept} className="sr-only" onChange={event => selectMedia(event, setFile)}/></label>)}</div>
+            {(image || video || audio) && <div className="space-y-3 rounded-2xl bg-muted/25 p-3 sm:p-4">
+              {media.filter(item => item.file).map(({ kind, label, file, url, setFile }) => <div key={kind} className="relative overflow-hidden rounded-xl bg-white">
+                <div className="flex items-center justify-between gap-3 border-b border-muted/60 px-3 py-2"><div className="min-w-0"><p className="text-[10px] font-bold text-fg/40">{label}预览</p><p className="truncate text-xs">{file?.name}</p></div><button type="button" onClick={() => setFile(null)} className="shrink-0 rounded-full bg-muted/50 p-2" aria-label={`移除${label}`}><X size={14}/></button></div>
+                {kind === 'image' && <img src={url} alt="待上传照片预览" className="max-h-64 w-full object-contain"/>}
+                {kind === 'video' && <video src={url} controls playsInline preload="metadata" className="max-h-64 w-full bg-black object-contain"/>}
+                {kind === 'audio' && <div className="p-3"><audio src={url} controls preload="metadata" className="w-full"/></div>}
+              </div>)}
+            </div>}
             {error && <p className="text-sm text-red-700">{error}</p>}
-            <button disabled={busy || selectedDogs.length === 0} className="flex w-full items-center justify-center gap-2 rounded-full bg-accent py-3.5 text-sm font-bold text-bg disabled:opacity-50">{busy && <LoaderCircle className="animate-spin" size={16}/>}提交审核</button>
+            <div className="sticky bottom-0 -mx-2 bg-gradient-to-t from-bg via-bg to-transparent px-2 pb-[env(safe-area-inset-bottom)] pt-3"><button disabled={busy || selectedDogs.length === 0} className="flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-accent py-3.5 text-sm font-bold text-bg shadow-lg disabled:opacity-50">{busy && <LoaderCircle className="animate-spin" size={16}/>}提交审核</button></div>
           </form>
         )}
       </div>
