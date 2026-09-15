@@ -1,0 +1,32 @@
+name: Keep Supabase Active
+
+on:
+  schedule:
+    # GitHub Actions uses UTC. Three small reads per day are enough to create
+    # regular database activity without materially affecting the free quota.
+    - cron: '17 1,9,17 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ping-database:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Read one published chronicle entry
+        env:
+          SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+          SUPABASE_PUBLISHABLE_KEY: ${{ vars.VITE_SUPABASE_PUBLISHABLE_KEY }}
+        run: |
+          test -n "$SUPABASE_URL"
+          test -n "$SUPABASE_PUBLISHABLE_KEY"
+          curl --fail-with-body --silent --show-error \
+            --get "$SUPABASE_URL/rest/v1/chronicle_entries" \
+            --header "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+            --header "Authorization: Bearer $SUPABASE_PUBLISHABLE_KEY" \
+            --data-urlencode "select=id" \
+            --data-urlencode "status=eq.published" \
+            --data-urlencode "deleted_at=is.null" \
+            --data-urlencode "limit=1"
