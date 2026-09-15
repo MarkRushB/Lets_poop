@@ -58,11 +58,11 @@ const request = async <T>(path: string, init: RequestInit = {}, token?: string):
     headers: { ...headers(token), ...(init.headers ?? {}) },
   });
   if (!response.ok) {
-    const payload = await response.json().catch(() => ({}));
-    throw new Error(payload.message || payload.error_description || '请求失败，请稍后再试');
+    const payload = await response.json().catch(() => ({})) as Record<string, string>;
+    throw new Error(payload.message || payload.error_description || payload.error || '请求失败，请稍后再试');
   }
-  if (response.status === 204) return undefined as T;
-  return response.json();
+  const body = await response.text();
+  return (body ? JSON.parse(body) : undefined) as T;
 };
 
 const getOrCreateSession = async () => {
@@ -146,7 +146,10 @@ const upload = async (file: File, kind: 'image' | 'video' | 'audio', session: Se
     },
     body: file,
   });
-  if (!response.ok) throw new Error(`${kind} 上传失败`);
+  if (!response.ok) {
+    const payload = await response.json().catch(() => ({})) as Record<string, string>;
+    throw new Error(payload.message || payload.error || `${kind} 上传失败`);
+  }
   return `${url}/storage/v1/object/public/chronicle-media/${objectPath}`;
 };
 
