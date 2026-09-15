@@ -1,12 +1,12 @@
 import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react';
-import { Check, LoaderCircle, PawPrint, Upload, X } from 'lucide-react';
+import { Check, LoaderCircle, PawPrint, Pencil, Upload, X } from 'lucide-react';
 import {
   chronicleApiEnabled,
   getCurrentParentProfile,
   getRememberedParent,
-  loadPendingEntries,
-  reviewEntry,
+  loadEditableEntries,
   submitChronicleEntry,
+  updateChronicleEntry,
   verifyInvite,
   type ParentProfile,
   type PendingEntry,
@@ -28,6 +28,52 @@ function useObjectUrl(file: File | null) {
   return objectUrl;
 }
 
+function EditableEntry({ item, dogNames, disabled, onSave }: {
+  item: PendingEntry;
+  dogNames: string[];
+  disabled: boolean;
+  onSave: (updates: Parameters<typeof updateChronicleEntry>[1]) => Promise<void>;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [selectedDogs, setSelectedDogs] = useState(item.dog_names);
+  const field = 'w-full rounded-xl border border-muted bg-white px-3 py-2.5 text-sm outline-none focus:border-accent';
+
+  const save = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    await onSave({
+      eventDate: String(form.get('eventDate')),
+      title: String(form.get('title')),
+      description: String(form.get('description')),
+      category: String(form.get('category')) as PendingEntry['category'],
+      dogNames: selectedDogs,
+    });
+    setSaved(true);
+    setEditing(false);
+    window.setTimeout(() => setSaved(false), 1800);
+  };
+
+  return <article className="rounded-2xl border border-muted bg-white/60 p-4 sm:p-5">
+    {!editing ? <>
+      <div className="mb-2 flex items-center justify-between gap-3"><time className="text-[11px] font-bold text-accent">{item.event_date}</time><span className="truncate text-[10px] text-fg/35">{item.dog_names.join(' · ')}</span></div>
+      <h3 className="font-serif text-lg font-bold">{item.title}</h3>
+      <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-fg/65">{item.description}</p>
+      {item.image_url && <img src={item.image_url} alt="发布图片" className="mt-4 max-h-52 w-full rounded-xl object-contain"/>}
+      {item.video_url && <video src={item.video_url} controls playsInline className="mt-4 max-h-52 w-full rounded-xl"/>}
+      {item.audio_url && <audio src={item.audio_url} controls className="mt-4 w-full"/>}
+      <button type="button" onClick={() => setEditing(true)} className="mt-4 flex w-full items-center justify-center gap-2 rounded-full bg-muted/55 py-2.5 text-xs font-bold"><Pencil size={14}/>{saved ? '已保存' : '编辑内容'}</button>
+    </> : <form onSubmit={save} className="space-y-3">
+      <input name="eventDate" type="date" defaultValue={item.event_date} className={field} required/>
+      <input name="title" defaultValue={item.title} maxLength={80} className={field} required/>
+      <textarea name="description" defaultValue={item.description} maxLength={2000} className={`${field} min-h-28 resize-y`} required/>
+      <div className="flex flex-wrap gap-1.5">{dogNames.map(dog => <button type="button" key={dog} onClick={() => setSelectedDogs(value => value.includes(dog) ? value.filter(name => name !== dog) : [...value, dog])} className={`rounded-full px-2.5 py-1 text-[11px] font-bold ${selectedDogs.includes(dog) ? 'bg-accent text-bg' : 'bg-muted/45 text-fg/60'}`}>{dog}</button>)}</div>
+      <select name="category" defaultValue={item.category} className={field}><option value="funny">搞笑</option><option value="milestone">里程碑</option><option value="meeting">相聚</option><option value="legend">传说</option></select>
+      <div className="flex gap-2"><button type="submit" disabled={disabled || selectedDogs.length === 0} className="flex-1 rounded-full bg-accent py-2.5 text-xs font-bold text-bg disabled:opacity-50">保存修改</button><button type="button" onClick={() => { setEditing(false); setSelectedDogs(item.dog_names); }} className="rounded-full bg-muted/55 px-5 py-2.5 text-xs font-bold">取消</button></div>
+    </form>}
+  </article>;
+}
+
 export default function SubmissionDialog({ open, dogNames, onClose }: Props) {
   const [parent, setParent] = useState<string | null>(() => getRememberedParent());
   const [nickname, setNickname] = useState('');
@@ -37,7 +83,7 @@ export default function SubmissionDialog({ open, dogNames, onClose }: Props) {
   const [error, setError] = useState('');
   const [sent, setSent] = useState(false);
   const [profile, setProfile] = useState<ParentProfile | null>(null);
-  const [mode, setMode] = useState<'submit' | 'review'>('submit');
+  const [mode, setMode] = useState<'submit' | 'manage'>('submit');
   const [pending, setPending] = useState<PendingEntry[]>([]);
   const [image, setImage] = useState<File | null>(null);
   const [video, setVideo] = useState<File | null>(null);
@@ -64,10 +110,10 @@ export default function SubmissionDialog({ open, dogNames, onClose }: Props) {
   }, [open, parent]);
 
   useEffect(() => {
-    if (mode !== 'review' || !profile?.is_admin) return;
+    if (mode !== 'manage' || !parent) return;
     setBusy(true);
-    loadPendingEntries().then(setPending).catch(reason => setError(reason instanceof Error ? reason.message : '读取失败')).finally(() => setBusy(false));
-  }, [mode, profile]);
+    loadEditableEntries().then(setPending).catch(reason => setError(reason instanceof Error ? reason.message : '读取失败')).finally(() => setBusy(false));
+  }, [mode, parent]);
 
   if (!open) return null;
 
@@ -102,12 +148,19 @@ export default function SubmissionDialog({ open, dogNames, onClose }: Props) {
     finally { setBusy(false); }
   };
 
-  const review = async (id: number, status: 'published' | 'rejected') => {
+  const saveEntry = async (id: number, updates: Parameters<typeof updateChronicleEntry>[1]) => {
     setBusy(true); setError('');
     try {
-      await reviewEntry(id, status);
-      setPending(items => items.filter(item => item.id !== id));
-    } catch (reason) { setError(reason instanceof Error ? reason.message : '审核失败'); }
+      await updateChronicleEntry(id, updates);
+      setPending(items => items.map(item => item.id === id ? {
+        ...item,
+        event_date: updates.eventDate,
+        title: updates.title,
+        description: updates.description,
+        category: updates.category,
+        dog_names: updates.dogNames,
+      } : item));
+    } catch (reason) { setError(reason instanceof Error ? reason.message : '保存失败'); throw reason; }
     finally { setBusy(false); }
   };
 
@@ -126,34 +179,25 @@ export default function SubmissionDialog({ open, dogNames, onClose }: Props) {
     <div className="fixed inset-0 z-[200] flex items-end justify-center bg-fg/25 p-0 backdrop-blur-sm sm:items-center sm:p-6" role="dialog" aria-modal="true" aria-label="记录一件狗事">
       <div className="relative h-[100dvh] max-h-[100dvh] w-full max-w-2xl overflow-y-auto overscroll-contain bg-bg px-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] pt-[calc(1.25rem+env(safe-area-inset-top))] shadow-2xl sm:h-auto sm:max-h-[94vh] sm:rounded-[2rem] sm:p-8 md:p-10">
         <button onClick={onClose} className="absolute right-3 top-[calc(.75rem+env(safe-area-inset-top))] rounded-full p-2.5 hover:bg-muted/40 sm:right-6 sm:top-6" aria-label="关闭"><X size={20}/></button>
-        <div className="mb-6 flex items-center gap-3 pr-10 sm:mb-8"><PawPrint className="shrink-0 text-accent"/><div><p className="text-[10px] font-bold uppercase tracking-[.3em] text-fg/40">Dog Chronicle</p><h2 className="font-serif text-2xl font-black sm:text-3xl">{mode === 'review' ? '审核狗狗新闻' : '记录一件狗事'}</h2></div></div>
+        <div className="mb-6 flex items-center gap-3 pr-10 sm:mb-8"><PawPrint className="shrink-0 text-accent"/><div><p className="text-[10px] font-bold uppercase tracking-[.3em] text-fg/40">Dog Chronicle</p><h2 className="font-serif text-2xl font-black sm:text-3xl">{mode === 'manage' ? (profile?.is_admin ? '管理全部发布' : '我的发布') : '记录一件狗事'}</h2></div></div>
 
-        {profile?.is_admin && parent && !sent && (
+        {parent && !sent && (
           <div className="mb-7 flex rounded-full bg-muted/35 p-1 text-xs font-bold">
             <button onClick={() => setMode('submit')} className={`flex-1 rounded-full py-2 ${mode === 'submit' ? 'bg-white shadow-sm' : 'text-fg/45'}`}>投稿</button>
-            <button onClick={() => setMode('review')} className={`flex-1 rounded-full py-2 ${mode === 'review' ? 'bg-white shadow-sm' : 'text-fg/45'}`}>待审核</button>
+            <button onClick={() => setMode('manage')} className={`flex-1 rounded-full py-2 ${mode === 'manage' ? 'bg-white shadow-sm' : 'text-fg/45'}`}>{profile?.is_admin ? '管理全部' : '我的发布'}</button>
           </div>
         )}
 
         {!chronicleApiEnabled ? (
           <div className="rounded-2xl bg-muted/35 p-5 text-sm leading-7">投稿入口已经准备好，站长配置 Supabase 环境变量后即可开放。现有时间轴不会受到影响。</div>
-        ) : mode === 'review' && profile?.is_admin ? (
+        ) : mode === 'manage' && parent ? (
           <div className="space-y-4">
-            {busy && pending.length === 0 ? <div className="flex justify-center py-16"><LoaderCircle className="animate-spin"/></div> : pending.length === 0 ? <div className="py-16 text-center text-sm text-fg/45">没有待审核的狗狗新闻</div> : pending.map(item => (
-              <article key={item.id} className="rounded-2xl border border-muted bg-white/60 p-5">
-                <div className="mb-2 flex items-center justify-between gap-3"><time className="text-[11px] font-bold text-accent">{item.event_date}</time><span className="text-[10px] text-fg/35">{item.dog_names.join(' · ')}</span></div>
-                <h3 className="font-serif text-lg font-bold">{item.title}</h3>
-                <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-fg/65">{item.description}</p>
-                {item.image_url && <img src={item.image_url} alt="投稿图片" className="mt-4 max-h-52 w-full rounded-xl object-cover"/>}
-                {item.video_url && <video src={item.video_url} controls className="mt-4 max-h-52 w-full rounded-xl"/>}
-                {item.audio_url && <audio src={item.audio_url} controls className="mt-4 w-full"/>}
-                <div className="mt-5 flex gap-2"><button disabled={busy} onClick={() => review(item.id, 'published')} className="flex-1 rounded-full bg-accent py-2.5 text-xs font-bold text-bg">批准发布</button><button disabled={busy} onClick={() => review(item.id, 'rejected')} className="flex-1 rounded-full bg-muted/60 py-2.5 text-xs font-bold">退回</button></div>
-              </article>
-            ))}
+            <p className="text-xs leading-5 text-fg/45">{profile?.is_admin ? '你可以编辑所有家长发布的内容。' : '你可以编辑自己发布的内容。'}保存后刷新主页即可看到更新。</p>
+            {busy && pending.length === 0 ? <div className="flex justify-center py-16"><LoaderCircle className="animate-spin"/></div> : pending.length === 0 ? <div className="py-16 text-center text-sm text-fg/45">还没有发布过狗狗新闻</div> : pending.map(item => <div key={item.id}><EditableEntry item={item} dogNames={dogNames} disabled={busy} onSave={updates => saveEntry(item.id, updates)}/></div>)}
             {error && <p className="text-sm text-red-700">{error}</p>}
           </div>
         ) : sent ? (
-          <div className="py-14 text-center"><Check className="mx-auto mb-5 text-accent" size={44}/><h3 className="font-serif text-2xl font-bold">投稿收到啦！</h3><p className="mt-3 text-sm text-fg/55">审核通过后，它就会出现在狗狗编年史里。</p><button onClick={onClose} className="mt-8 rounded-full bg-accent px-7 py-3 text-sm font-bold text-bg">完成</button></div>
+          <div className="py-14 text-center"><Check className="mx-auto mb-5 text-accent" size={44}/><h3 className="font-serif text-2xl font-bold">发布成功！</h3><p className="mt-3 text-sm text-fg/55">刷新主页后，它就会出现在狗狗编年史里。</p><button onClick={onClose} className="mt-8 rounded-full bg-accent px-7 py-3 text-sm font-bold text-bg">完成</button></div>
         ) : !parent ? (
           <form onSubmit={identify} className="space-y-5">
             <p className="text-sm leading-7 text-fg/60">第一次来？输入群里的邀请码和你的昵称。这个设备会记住你，以后可以直接投稿。</p>
@@ -180,7 +224,7 @@ export default function SubmissionDialog({ open, dogNames, onClose }: Props) {
               </div>)}
             </div>}
             {error && <p className="text-sm text-red-700">{error}</p>}
-            <div className="sticky bottom-0 -mx-2 bg-gradient-to-t from-bg via-bg to-transparent px-2 pb-[env(safe-area-inset-bottom)] pt-3"><button disabled={busy || selectedDogs.length === 0} className="flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-accent py-3.5 text-sm font-bold text-bg shadow-lg disabled:opacity-50">{busy && <LoaderCircle className="animate-spin" size={16}/>}提交审核</button></div>
+            <div className="sticky bottom-0 -mx-2 bg-gradient-to-t from-bg via-bg to-transparent px-2 pb-[env(safe-area-inset-bottom)] pt-3"><button disabled={busy || selectedDogs.length === 0} className="flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-accent py-3.5 text-sm font-bold text-bg shadow-lg disabled:opacity-50">{busy && <LoaderCircle className="animate-spin" size={16}/>}直接发布</button></div>
           </form>
         )}
       </div>

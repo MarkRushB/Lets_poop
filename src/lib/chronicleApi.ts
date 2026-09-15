@@ -34,6 +34,8 @@ export type PendingEntry = {
   video_url?: string;
   audio_url?: string;
   created_at: string;
+  submitted_by: string;
+  status: 'pending' | 'published' | 'rejected';
 };
 
 export const chronicleApiEnabled = Boolean(url && publishableKey);
@@ -114,21 +116,27 @@ export const getCurrentParentProfile = async (): Promise<ParentProfile | null> =
   return rows[0] ?? null;
 };
 
-export const loadPendingEntries = async (): Promise<PendingEntry[]> => {
+export const loadEditableEntries = async (): Promise<PendingEntry[]> => {
   const session = await getOrCreateSession();
   return request<PendingEntry[]>(
-    '/rest/v1/chronicle_entries?status=eq.pending&select=*&order=created_at.desc',
+    '/rest/v1/chronicle_entries?select=*&order=created_at.desc',
     {},
     session.access_token,
   );
 };
 
-export const reviewEntry = async (id: number, status: 'published' | 'rejected') => {
+export const updateChronicleEntry = async (id: number, updates: Pick<Submission, 'eventDate' | 'title' | 'description' | 'category' | 'dogNames'>) => {
   const session = await getOrCreateSession();
   await request(`/rest/v1/chronicle_entries?id=eq.${id}`, {
     method: 'PATCH',
     headers: { Prefer: 'return=minimal' },
-    body: JSON.stringify({ status, reviewed_at: new Date().toISOString() }),
+    body: JSON.stringify({
+      event_date: updates.eventDate,
+      title: updates.title,
+      description: updates.description,
+      category: updates.category,
+      dog_names: updates.dogNames,
+    }),
   }, session.access_token);
 };
 
@@ -172,6 +180,7 @@ export const submitChronicleEntry = async (submission: Submission) => {
       image_url: imageUrl,
       video_url: videoUrl,
       audio_url: audioUrl,
+      status: 'published',
     }),
   }, session.access_token);
 };
