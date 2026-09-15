@@ -5,9 +5,16 @@
 
 import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { motion, useScroll, useTransform, AnimatePresence } from 'motion/react';
-import { PawPrint, ArrowRight, ArrowDown, Search, X, Filter, ArrowUpDown } from 'lucide-react';
+import { PawPrint, ArrowRight, ArrowDown, Search, X, Plus } from 'lucide-react';
 import { cn } from './lib/utils';
 import { CHRONICLE_EVENTS, CHRONICLE_TITLE, CHRONICLE_SUBTITLE, type ChronicleEvent } from './constants';
+import SubmissionDialog from './SubmissionDialog';
+import { loadPublishedEntries } from './lib/chronicleApi';
+
+const mediaSrc = (source?: string) => {
+  if (!source) return undefined;
+  return /^https?:\/\//.test(source) ? source : `${import.meta.env.BASE_URL}${source.replace(/^\//, '')}`;
+};
 
 const MONTH_INDEX: Record<string, number> = {
   jan: 0,
@@ -370,8 +377,8 @@ const EventSection = React.memo(({ event, index, isMobile, onOpenDetail }: { eve
             {event.video && (
               <div className="flex-1 min-h-0 max-w-[320px]">
                 <VideoPlayer
-                  src={`${import.meta.env.BASE_URL}${event.video}`}
-                  poster={event.videoPoster ? `${import.meta.env.BASE_URL}${event.videoPoster}` : undefined}
+                  src={mediaSrc(event.video)!}
+                  poster={mediaSrc(event.videoPoster)}
                   className="h-full w-auto max-w-full rounded-sm shadow-lg"
                 />
               </div>
@@ -387,7 +394,7 @@ const EventSection = React.memo(({ event, index, isMobile, onOpenDetail }: { eve
                   whileInView={{ opacity: 1 }}
                   viewport={{ once: true, margin: "100px" }}
                   transition={{ duration: 0.6 }}
-                  src={`${import.meta.env.BASE_URL}${event.image}`} 
+                  src={mediaSrc(event.image)}
                   alt={event.title}
                   loading="lazy"
                   className={cn(
@@ -404,7 +411,7 @@ const EventSection = React.memo(({ event, index, isMobile, onOpenDetail }: { eve
                   className="w-full"
                   preload="metadata"
                 >
-                  <source src={`${import.meta.env.BASE_URL}${event.audio}`} />
+                  <source src={mediaSrc(event.audio)} />
                 </audio>
               </div>
             )}
@@ -414,8 +421,8 @@ const EventSection = React.memo(({ event, index, isMobile, onOpenDetail }: { eve
             {event.video && (
               <div className="w-full max-w-[320px]">
                 <VideoPlayer
-                  src={`${import.meta.env.BASE_URL}${event.video}`}
-                  poster={event.videoPoster ? `${import.meta.env.BASE_URL}${event.videoPoster}` : undefined}
+                  src={mediaSrc(event.video)!}
+                  poster={mediaSrc(event.videoPoster)}
                   className="w-full rounded-sm shadow-lg"
                 />
               </div>
@@ -431,7 +438,7 @@ const EventSection = React.memo(({ event, index, isMobile, onOpenDetail }: { eve
                   whileInView={{ opacity: 1 }}
                   viewport={{ once: true, margin: "100px" }}
                   transition={{ duration: 0.6 }}
-                  src={`${import.meta.env.BASE_URL}${event.image}`} 
+                  src={mediaSrc(event.image)}
                   alt={event.title}
                   loading="lazy"
                   className={cn(
@@ -448,7 +455,7 @@ const EventSection = React.memo(({ event, index, isMobile, onOpenDetail }: { eve
                   className="w-full"
                   preload="metadata"
                 >
-                  <source src={`${import.meta.env.BASE_URL}${event.audio}`} />
+                  <source src={mediaSrc(event.audio)} />
                 </audio>
               </div>
             )}
@@ -471,6 +478,14 @@ export default function App() {
   const [selectedDateKey, setSelectedDateKey] = useState<string | null>(null);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<ChronicleEvent | null>(null);
+  const [isSubmissionOpen, setIsSubmissionOpen] = useState(false);
+  const [events, setEvents] = useState<ChronicleEvent[]>(CHRONICLE_EVENTS);
+
+  useEffect(() => {
+    loadPublishedEntries()
+      .then(remoteEvents => setEvents([...CHRONICLE_EVENTS, ...remoteEvents]))
+      .catch(error => console.warn('使用本地编年史数据：', error));
+  }, []);
 
   useEffect(() => {
     if (!selectedEvent) return;
@@ -498,30 +513,30 @@ export default function App() {
   }, []);
 
   const years = useMemo(() => {
-    const y = Array.from(new Set(CHRONICLE_EVENTS.map(e => e.year)));
+    const y = Array.from(new Set<string>(events.map(e => e.year)));
     return y.sort((a, b) => parseInt(a) - parseInt(b));
-  }, [CHRONICLE_EVENTS]);
+  }, [events]);
 
   const allDogs = useMemo(() => {
     const dogs = new Set<string>();
-    CHRONICLE_EVENTS.forEach(e => e.dogNames?.forEach(d => dogs.add(d)));
+    events.forEach(e => e.dogNames?.forEach(d => dogs.add(d)));
     return Array.from(dogs).sort();
-  }, [CHRONICLE_EVENTS]);
+  }, [events]);
 
   const eventDateSet = useMemo(() => {
     const s = new Set<string>();
-    CHRONICLE_EVENTS.forEach(event => {
+    events.forEach(event => {
       const ts = toEventTimestamp(event);
       if (ts === Number.MAX_SAFE_INTEGER) return;
       const d = new Date(ts);
       s.add(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`);
     });
     return s;
-  }, [CHRONICLE_EVENTS]);
+  }, [events]);
 
   const eventDateMap = useMemo(() => {
-    const map = new Map<string, (typeof CHRONICLE_EVENTS)[number][]>();
-    CHRONICLE_EVENTS.forEach(event => {
+    const map = new Map<string, ChronicleEvent[]>();
+    events.forEach(event => {
       const ts = toEventTimestamp(event);
       if (ts === Number.MAX_SAFE_INTEGER) return;
       const d = new Date(ts);
@@ -530,15 +545,15 @@ export default function App() {
       map.get(key)!.push(event);
     });
     return map;
-  }, [CHRONICLE_EVENTS]);
+  }, [events]);
 
   const filteredEvents = useMemo(() => {
-    const events = selectedDog
-      ? CHRONICLE_EVENTS.filter(e => e.dogNames?.includes(selectedDog))
-      : CHRONICLE_EVENTS;
+    const sourceEvents = selectedDog
+      ? events.filter(e => e.dogNames?.includes(selectedDog))
+      : events;
 
     const dir = sortOrder === 'asc' ? 1 : -1;
-    return events
+    return sourceEvents
       .map((event, index) => ({ event, index }))
       .sort((a, b) => {
         const timeDiff = toEventTimestamp(a.event) - toEventTimestamp(b.event);
@@ -546,7 +561,7 @@ export default function App() {
         return (a.index - b.index) * dir;
       })
       .map(item => item.event);
-  }, [selectedDog, sortOrder, CHRONICLE_EVENTS]);
+  }, [selectedDog, sortOrder, events]);
 
   // Scroll to first item when filter changes
   useEffect(() => {
@@ -565,7 +580,7 @@ export default function App() {
     const source = selectedDateKey
       ? (eventDateMap.get(selectedDateKey) ?? [])
       : filteredEvents;
-    const grouped: Record<string, typeof CHRONICLE_EVENTS> = {};
+    const grouped: Record<string, ChronicleEvent[]> = {};
     source.forEach(event => {
       if (!grouped[event.year]) grouped[event.year] = [];
       grouped[event.year].push(event);
@@ -644,6 +659,14 @@ export default function App() {
 
         {/* Navigation Panel */}
         <div className="fixed top-6 right-6 z-[60] flex flex-col items-end gap-2">
+          <button
+            onClick={() => setIsSubmissionOpen(true)}
+            className="flex h-12 items-center gap-2 rounded-full bg-fg px-4 text-bg shadow-lg transition-transform hover:scale-105"
+            aria-label="记录一件狗事"
+          >
+            <Plus size={18} />
+            <span className="hidden text-xs font-bold sm:inline">记录一件狗事</span>
+          </button>
           <button 
             onClick={() => setIsFilterOpen(!isFilterOpen)}
             aria-label={isFilterOpen ? '关闭筛选面板' : '打开筛选面板'}
@@ -967,7 +990,7 @@ export default function App() {
                       {selectedEvent.fixedImageSize ? (
                         <div className="rounded-sm shadow-lg overflow-hidden" style={FIXED_IMAGE_FRAME_STYLE}>
                           <img
-                            src={`${import.meta.env.BASE_URL}${selectedEvent.image}`}
+                            src={mediaSrc(selectedEvent.image)}
                             alt={selectedEvent.title}
                             className="w-full h-full object-contain object-top"
                             referrerPolicy="no-referrer"
@@ -975,7 +998,7 @@ export default function App() {
                         </div>
                       ) : (
                         <img
-                          src={`${import.meta.env.BASE_URL}${selectedEvent.image}`}
+                          src={mediaSrc(selectedEvent.image)}
                           alt={selectedEvent.title}
                           className="w-full h-auto rounded-sm shadow-lg"
                           referrerPolicy="no-referrer"
@@ -987,8 +1010,8 @@ export default function App() {
                   {selectedEvent.video && (
                     <div className="pt-8">
                       <VideoPlayer
-                        src={`${import.meta.env.BASE_URL}${selectedEvent.video}`}
-                        poster={selectedEvent.videoPoster ? `${import.meta.env.BASE_URL}${selectedEvent.videoPoster}` : undefined}
+                        src={mediaSrc(selectedEvent.video)!}
+                        poster={mediaSrc(selectedEvent.videoPoster)}
                         className="w-full rounded-sm shadow-lg"
                       />
                     </div>
@@ -1001,7 +1024,7 @@ export default function App() {
                         className="w-full"
                         preload="metadata"
                       >
-                        <source src={`${import.meta.env.BASE_URL}${selectedEvent.audio}`} />
+                        <source src={mediaSrc(selectedEvent.audio)} />
                       </audio>
                     </div>
                   )}
@@ -1011,6 +1034,7 @@ export default function App() {
           </div>
         )}
       </AnimatePresence>
+      <SubmissionDialog open={isSubmissionOpen} dogNames={allDogs} onClose={() => setIsSubmissionOpen(false)} />
     </main>
   );
 }

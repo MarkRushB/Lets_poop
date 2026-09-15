@@ -115,6 +115,24 @@ npm run build
 
 ## 无代码投稿 / No-Code Contribution
 
+### 网页内投稿（推荐）
+
+狗狗家长可以直接点击网站右上角的 **记录一件狗事**，使用群邀请码和昵称验证身份后投稿。浏览器会记住身份；投稿默认进入待审核状态，不会自动公开。
+
+首次配置：
+
+1. 在 Supabase 新建项目，并在 Authentication → Providers 中启用 Anonymous Sign-Ins。
+2. 在 SQL Editor 执行 `supabase/migrations/202609150001_chronicle_submissions.sql`。
+3. 按迁移文件末尾的示例设置群邀请码。
+4. 在 GitHub 仓库 Settings → Secrets and variables → Actions → Variables 中添加：
+   - `VITE_SUPABASE_URL`
+   - `VITE_SUPABASE_PUBLISHABLE_KEY`
+5. 管理员首次用邀请码和昵称进入投稿页后，在 Supabase 的 `parent_profiles` 表中将对应记录的 `is_admin` 改为 `true`。重新打开投稿页即可看到“待审核”标签，直接批准或退回投稿。
+
+邀请码只在数据库函数中以哈希形式保存，不会出现在 GitHub Pages 的前端代码里。单个媒体文件上限为 25 MB。
+
+原有 GitHub Issue 投稿流程仍然保留，方便管理员继续使用。
+
 ### 中文
 
 无需修改代码，即可通过 GitHub Issue 表单新增编年史事件：
