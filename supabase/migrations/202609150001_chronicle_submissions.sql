@@ -84,7 +84,7 @@ declare
   clean_nickname text := trim(parent_nickname);
 begin
   select invite_hash into configured_hash from private.invite_settings where id = true;
-  if auth.uid() is null or configured_hash is null or crypt(invite_code, configured_hash) <> configured_hash then
+  if auth.uid() is null or configured_hash is null or extensions.crypt(invite_code, configured_hash) <> configured_hash then
     return jsonb_build_object('ok', false);
   end if;
   if char_length(clean_nickname) < 1 or char_length(clean_nickname) > 30 then
@@ -126,6 +126,5 @@ with check (
 
 -- 在 Supabase SQL Editor 中运行下面这条语句来设置或更换邀请码：
 -- insert into private.invite_settings (id, invite_hash)
--- values (true, crypt('替换成你的邀请码', gen_salt('bf')))
+-- values (true, extensions.crypt('替换成你的邀请码', extensions.gen_salt('bf')))
 -- on conflict (id) do update set invite_hash = excluded.invite_hash;
-
