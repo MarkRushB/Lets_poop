@@ -36,6 +36,7 @@ export type PendingEntry = {
   created_at: string;
   submitted_by: string;
   status: 'pending' | 'published' | 'rejected';
+  deleted_at?: string | null;
 };
 
 export const chronicleApiEnabled = Boolean(url && publishableKey);
@@ -140,6 +141,15 @@ export const updateChronicleEntry = async (id: number, updates: Pick<Submission,
   }, session.access_token);
 };
 
+export const setChronicleEntryDeleted = async (id: number, deleted: boolean) => {
+  const session = await getOrCreateSession();
+  await request(`/rest/v1/chronicle_entries?id=eq.${id}`, {
+    method: 'PATCH',
+    headers: { Prefer: 'return=minimal' },
+    body: JSON.stringify({ deleted_at: deleted ? new Date().toISOString() : null }),
+  }, session.access_token);
+};
+
 const upload = async (file: File, kind: 'image' | 'video' | 'audio', session: Session) => {
   if (file.size > 25 * 1024 * 1024) throw new Error(`${kind} 文件不能超过 25 MB`);
   const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '-');
@@ -188,7 +198,7 @@ export const submitChronicleEntry = async (submission: Submission) => {
 export const loadPublishedEntries = async (): Promise<ChronicleEvent[]> => {
   if (!chronicleApiEnabled) return [];
   const rows = await request<Array<Record<string, unknown>>>(
-    '/rest/v1/chronicle_entries?status=eq.published&select=*&order=event_date.asc',
+    '/rest/v1/chronicle_entries?status=eq.published&deleted_at=is.null&select=*&order=event_date.asc',
   );
   return rows.map((row) => {
     const date = new Date(`${row.event_date}T12:00:00`);

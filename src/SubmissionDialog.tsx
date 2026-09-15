@@ -1,11 +1,12 @@
 import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react';
-import { Check, LoaderCircle, PawPrint, Pencil, Upload, X } from 'lucide-react';
+import { Check, LoaderCircle, PawPrint, Pencil, RotateCcw, Trash2, Upload, X } from 'lucide-react';
 import {
   chronicleApiEnabled,
   getCurrentParentProfile,
   getRememberedParent,
   loadEditableEntries,
   submitChronicleEntry,
+  setChronicleEntryDeleted,
   updateChronicleEntry,
   verifyInvite,
   type ParentProfile,
@@ -28,11 +29,12 @@ function useObjectUrl(file: File | null) {
   return objectUrl;
 }
 
-function EditableEntry({ item, dogNames, disabled, onSave }: {
+function EditableEntry({ item, dogNames, disabled, onSave, onDeletedChange }: {
   item: PendingEntry;
   dogNames: string[];
   disabled: boolean;
   onSave: (updates: Parameters<typeof updateChronicleEntry>[1]) => Promise<void>;
+  onDeletedChange: (deleted: boolean) => Promise<void>;
 }) {
   const [editing, setEditing] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -54,15 +56,18 @@ function EditableEntry({ item, dogNames, disabled, onSave }: {
     window.setTimeout(() => setSaved(false), 1800);
   };
 
-  return <article className="rounded-2xl border border-muted bg-white/60 p-4 sm:p-5">
+  return <article className={`rounded-2xl border p-4 sm:p-5 ${item.deleted_at ? 'border-red-200 bg-red-50/40' : 'border-muted bg-white/60'}`}>
     {!editing ? <>
-      <div className="mb-2 flex items-center justify-between gap-3"><time className="text-[11px] font-bold text-accent">{item.event_date}</time><span className="truncate text-[10px] text-fg/35">{item.dog_names.join(' · ')}</span></div>
+      <div className="mb-2 flex items-center justify-between gap-3"><div className="flex items-center gap-2"><time className="text-[11px] font-bold text-accent">{item.event_date}</time>{item.deleted_at && <span className="rounded-full bg-red-100 px-2 py-0.5 text-[9px] font-bold text-red-700">已删除</span>}</div><span className="truncate text-[10px] text-fg/35">{item.dog_names.join(' · ')}</span></div>
       <h3 className="font-serif text-lg font-bold">{item.title}</h3>
       <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-fg/65">{item.description}</p>
       {item.image_url && <img src={item.image_url} alt="发布图片" className="mt-4 max-h-52 w-full rounded-xl object-contain"/>}
       {item.video_url && <video src={item.video_url} controls playsInline className="mt-4 max-h-52 w-full rounded-xl"/>}
       {item.audio_url && <audio src={item.audio_url} controls className="mt-4 w-full"/>}
-      <button type="button" onClick={() => setEditing(true)} className="mt-4 flex w-full items-center justify-center gap-2 rounded-full bg-muted/55 py-2.5 text-xs font-bold"><Pencil size={14}/>{saved ? '已保存' : '编辑内容'}</button>
+      <div className="mt-4 flex gap-2">
+        {!item.deleted_at && <button type="button" onClick={() => setEditing(true)} className="flex flex-1 items-center justify-center gap-2 rounded-full bg-muted/55 py-2.5 text-xs font-bold"><Pencil size={14}/>{saved ? '已保存' : '编辑内容'}</button>}
+        {item.deleted_at ? <button type="button" disabled={disabled} onClick={() => onDeletedChange(false)} className="flex flex-1 items-center justify-center gap-2 rounded-full bg-accent py-2.5 text-xs font-bold text-bg disabled:opacity-50"><RotateCcw size={14}/>恢复发布</button> : <button type="button" disabled={disabled} onClick={() => { if (window.confirm(`确定删除“${item.title}”吗？删除后可在这里恢复。`)) void onDeletedChange(true); }} className="flex items-center justify-center gap-2 rounded-full bg-red-50 px-5 py-2.5 text-xs font-bold text-red-700 disabled:opacity-50"><Trash2 size={14}/>删除</button>}
+      </div>
     </> : <form onSubmit={save} className="space-y-3">
       <input name="eventDate" type="date" defaultValue={item.event_date} className={field} required/>
       <input name="title" defaultValue={item.title} maxLength={80} className={field} required/>
@@ -164,6 +169,15 @@ export default function SubmissionDialog({ open, dogNames, onClose }: Props) {
     finally { setBusy(false); }
   };
 
+  const changeDeleted = async (id: number, deleted: boolean) => {
+    setBusy(true); setError('');
+    try {
+      await setChronicleEntryDeleted(id, deleted);
+      setPending(items => items.map(item => item.id === id ? { ...item, deleted_at: deleted ? new Date().toISOString() : null } : item));
+    } catch (reason) { setError(reason instanceof Error ? reason.message : (deleted ? '删除失败' : '恢复失败')); }
+    finally { setBusy(false); }
+  };
+
   const field = 'w-full rounded-2xl border border-muted bg-white/70 px-4 py-3 text-sm outline-none focus:border-accent';
   const media = [
     { kind: 'image' as const, label: '照片', accept: 'image/*', file: image, url: imagePreview, setFile: setImage },
@@ -193,7 +207,7 @@ export default function SubmissionDialog({ open, dogNames, onClose }: Props) {
         ) : mode === 'manage' && parent ? (
           <div className="space-y-4">
             <p className="text-xs leading-5 text-fg/45">{profile?.is_admin ? '你可以编辑所有家长发布的内容。' : '你可以编辑自己发布的内容。'}保存后刷新主页即可看到更新。</p>
-            {busy && pending.length === 0 ? <div className="flex justify-center py-16"><LoaderCircle className="animate-spin"/></div> : pending.length === 0 ? <div className="py-16 text-center text-sm text-fg/45">还没有发布过狗狗新闻</div> : pending.map(item => <div key={item.id}><EditableEntry item={item} dogNames={dogNames} disabled={busy} onSave={updates => saveEntry(item.id, updates)}/></div>)}
+            {busy && pending.length === 0 ? <div className="flex justify-center py-16"><LoaderCircle className="animate-spin"/></div> : pending.length === 0 ? <div className="py-16 text-center text-sm text-fg/45">还没有发布过狗狗新闻</div> : pending.map(item => <div key={item.id}><EditableEntry item={item} dogNames={dogNames} disabled={busy} onSave={updates => saveEntry(item.id, updates)} onDeletedChange={deleted => changeDeleted(item.id, deleted)}/></div>)}
             {error && <p className="text-sm text-red-700">{error}</p>}
           </div>
         ) : sent ? (
